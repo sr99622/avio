@@ -1,0 +1,52 @@
+{% set version = "1.0.0" %}
+
+package:
+  name: avio
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv
+
+requirements:
+  build:
+    - "{{ compiler('cxx') }}"
+    - python==3.9
+    - cmake
+    - ninja
+    - numpy==1.22.4
+    - opencv==4.5.5
+    - ffmpeg==4.3.1
+    - SDL2_ttf==2.0.15
+
+  host:
+    - python==3.9
+    - pip
+    - numpy==1.22.4
+    - opencv==4.5.5
+    - ffmpeg==4.3.1
+    - SDL2_ttf==2.0.15
+
+  run:
+    - python==3.9
+    - numpy==1.22.4
+    - opencv==4.5.5
+    - ffmpeg==4.3.1
+    - SDL2_ttf==2.0.15
+
+test:
+  requires:
+    - pytest
+  imports:
+    - avio
+  source_files:
+    - tests
+  commands:
+    - python -m pytest
+
+about:
+  summary: A python media processing module
+  license_file: LICENSE
