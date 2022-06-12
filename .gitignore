@@ -1,0 +1,11 @@
+build/
+dist/
+_build/
+_generate
+*.so
+*.pyd
+*.egg-info
+/vscode/
+__pycache__
+_static
+_templates
