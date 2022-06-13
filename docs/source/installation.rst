@@ -300,7 +300,7 @@ subdirectory of the build directory, bin/Release.  Add the full path
 to this directory to the path environment variable.  For reference, the
 environment variables are set in Windows using the applet under 
 Settings->About->Advanced System Settings->Environment Variables.  Note
-that the command prompt must be re-started to incorporated the new 
+that the command prompt must be re-started to incorporate the new 
 setting.
 
 If you are working in a conda environment as recommended, the base 

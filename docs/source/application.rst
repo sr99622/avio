@@ -101,7 +101,7 @@ queue in the display, which holds the recently decoded frames.
 Python Callback
 ---------------
 
-Video streams may be manipulated with a python class as they are process by the application.
+Video streams may be manipulated with a python class as they are processed by the application.
 The echo.py file included with the distribution shows how parameters and data are passed
 from the main process to the python callback.  The primary data structure, which is the 
 image itself, is passed to the python callback as a NumPy array.

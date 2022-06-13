@@ -392,7 +392,7 @@ configuration specified by the developer.  As such, it is necessary to construct
 encoder configuration carefully to avoid errors.  A knowledge of how media files are 
 structured will help in this process.
 
-THe encoder constructor takes a writer and a media type identifer, so it is necessary 
+The encoder constructor takes a writer and a media type identifer, so it is necessary 
 to first construct a Writer object before an encoder.  To note here, the writer is not
 explicity added to the process object, it is implied through the encoder.
 

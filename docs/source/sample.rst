@@ -86,22 +86,22 @@ forge do include drivers for CUDA while the linux equivalent do not.
 .. rubric::
     encoding
 
-The play program cna be configured to write the results of the streams to a file.  The configuration
+The play program can be configured to write the results of the streams to a file.  The configuration
 shown in the play program is a fairly simple implementation of the encode function and shows the
 basic minimum required for a properly formed output.  There are many parameters that can be adjusted
 to affect the various qualities of the output.  Experimentation is recommended when developing an
 application that produces output.  Hardware encoding is available with the same caveats as those
 discussed in the decoding section above.
 
-The default encoder type is mp4 and can be changed with the --encode_type directove.  Other possible 
+The default encoder type is mp4 and can be changed with the --encode_type directive.  Other possible 
 values are avi, webm and mkv.
 
-THe default filename for output is a system generated name based on the date and time.  The default
+The default filename for output is a system generated name based on the date and time.  The default
 directory to which the application will write is the current directory.  These values may be changed
 by using the --output_filename and --output_dir directives respectively.
 
 Video encoders can be configured to use a specific h264 profile.  Normally, for for software encoders,
-the default is high, and for the CUDA hardware encoder, the default is medium.  The setting is accessed
+the default is high, and for the CUDA hardware encoder the default is medium.  The setting is accessed
 through the Encoder variable profile, and is shown in the play program as a commented line.
 
 The encoder is connected to the build in on screen commands it will toggle operation using the Rec button
@@ -110,13 +110,13 @@ effect.  Additionally, the application may be configured to start recording upon
 writer enabled property.   In the Play application, the --writer_enabled directive will make this setting.
 
 The record button will light red during record and will be white during idle.  If the application has not
-configure a writer, the record button will not be visible.  The recording function will cease automatically 
+configured a writer, the record button will not be visible.  The recording function will cease automatically 
 upon termination of the application.
 
 .. rubric::
     on screen controls
 
-avio has a build in GUI for controlling the playback and recording functions.  THe GUI resides in the 
+avio has a built in GUI for controlling the playback and recording functions.  The GUI resides in the 
 picture of the application and is termed the Heads Up Display (HUD).  The GUI will appear automatically 
 when the mouse cursor enters the screen area, and will retreat if the mouse becomes inactive or leaves 
 the screen.  It some cases, it may be desirable that the GUI is always or never present.  These effects 
@@ -199,7 +199,7 @@ compatible with the program is available from https://github.com/sr99622/deep_so
 saved_model into the python/deep_sort folder in the avio distribution source code.
 
 The deep_sort program requires initialization arguments for the tensorflow model, the gpu memory limit, and
-the input and output databases.  The program read the detections from the database, assigns a tracking id
+the input and output databases.  The program reads the detections from the database, assigns a tracking id
 to each and writes the result to an output database.  The results can be replayed using the db_read 
 callback the same way as shown above.  Unassigned detections are shown in green, and detections which
 are assigned to tracks are show in white with the track number.  A good exercise to observe the accuracy
