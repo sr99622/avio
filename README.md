@@ -19,7 +19,7 @@ individual frames as they are processed through the system using python function
 that previously would have required a C++ interface to implement.
 
 In addition to GPU image processisng, full access to hardware GPU decoding and encoding is 
-possible, harnessing the power of the GPU to improve perfomance during read and write operations.  
+possible, harnessing the power of the GPU to improve perfomance during read and write operations. 
 Most common formats are easily configured, allowing the devloper to present data to a wider
 audience.
 
