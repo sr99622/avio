@@ -1,6 +1,8 @@
 avio
 ====
 
+Full documentation is available at [Read the Docs](https://avio.readthedocs.io/en/latest/)
+
 **avio** is a Python package for processing multimedia files and streams.  It it built upon the 
 foundation of FFMPEG, but it is not a thin wrapper.  The details of using FFMPEG have been 
 abstracted away and modularized so that the developer may focus on higher level operations 
