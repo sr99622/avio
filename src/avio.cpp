@@ -88,6 +88,7 @@ public:
                 pkt->dts = pkt->pts = audio_next_pts;
                 audio_next_pts += pkt->duration;
             }
+            
             pipe.write(pkt);
             av_packet_free(&pkt);
 

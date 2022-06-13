@@ -5,7 +5,7 @@ _generate
 *.so
 *.pyd
 *.egg-info
-/vscode/
+.vscode/
 __pycache__
 _static
 _templates
