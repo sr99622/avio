@@ -194,7 +194,9 @@ This type of error is sometimes caused by a stale CMake cache.  Clearing the
 build directory under the avio directory can sometimes clear up this error.
 
 A tool which can be useful in finding the broken dependency on windows is
-https://github.com/lucasg/Dependencies.
+https://github.com/lucasg/Dependencies.  Use the command prompt in the conda
+environment to launch the DependenciesGui program so that it is loaded with
+the current environment variables
 
 
 Careful observation of the environment variables on the host machine may

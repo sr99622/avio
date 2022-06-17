@@ -4,6 +4,7 @@ _build/
 _generate
 *.so
 *.pyd
+*.pt
 *.egg-info
 .vscode/
 __pycache__

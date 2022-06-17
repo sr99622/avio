@@ -53,9 +53,17 @@ class Player:
         if args.write_enable:
             write_enable = True
 
-        darknet = False
-        if args.darknet:
-            darknet = True
+        mobilenet = ""
+        if args.mobilenet:
+            mobilenet = eval(args.mobilenet)
+
+        segment = False
+        if args.segment:
+            segment = True
+
+        yolov5 = ""
+        if args.yolov5:
+            yolov5 = eval(args.yolov5)
 
         echo = ""
         if args.echo:
@@ -206,8 +214,18 @@ class Player:
         if len(deep_sort) > 0:
             process.set_python(display, "./deep_sort/interface.py", "DeepSort")
             process.set_python_init_arg(display, deep_sort)
+        if len(yolov5) > 0:
+            process.set_python(display, "./yolov5.py", "YoloV5")
+            process.set_python_init_arg(display, yolov5)
+        if len(mobilenet) > 0:
+            process.set_python(display, "./mobilenet.py", "Mobilenet")
+            process.set_python_init_arg(display, mobilenet)
+        if segment:
+            process.set_python(display, "./segment/interface.py", "Segment")
+            
         process.add_display(display)
         process.run()
+        print("python done")
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="process media")
@@ -229,6 +247,9 @@ if __name__ == "__main__":
     parser.add_argument("--echo", type=ascii, help="key1=value1;key1=value2")
     parser.add_argument("--db_read", type=ascii, help="db_name=track.db")
     parser.add_argument("--deep_sort", type=ascii, help="model_name=./deep_sort/saved_model;gpu_mem_limit=6144;db_name_in=detect.db;db_name_out=track.db")
+    parser.add_argument("--yolov5", type=ascii, help="repo=ultralytics/yolov5;model=yolov5x6;width=1920;height=1080")
+    parser.add_argument("--mobilenet", type=ascii, help="model_name=C:/Users/sr996/Downloads/ssd_mobilenet_v2_320x320_coco17_tpu-8/saved_model;gpu_mem_limit=4096")
+    parser.add_argument("--segment", help="semantic segmentation", action="store_true")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int)
     parser.add_argument("--end_at", type=int)
