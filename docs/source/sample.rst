@@ -254,5 +254,3 @@ The record function can then be used to activate recording to store clips from t
     Please refer to https://debuggercafe.com/semantic-segmentation-using-pytorch-fcn-resnet/ for detailed
     information on how to implement semantic segmentation using pytorch.
 
-    
-
