@@ -218,20 +218,17 @@ To play back the results of the algorithm
 .. code-block:: text
 
     python play.py test.mp4 --db_read db_name=track.db --vfilter format=bgr24
-
+    
 .. rubric::
-    live stream harvesting
+    semantic segmentation
 
-By using the yt-dlp program in conjunction with avio, it is possible to harvest media from live streams
-from youtube and other media sites.  yt-dlp can be installed with conda forge.  To invoke with avio, use
-the stdin pipe as shown below.
+Please refer to https://debuggercafe.com/semantic-segmentation-using-pytorch-fcn-resnet/ for detailed
+information on how to implement semantic segmentation using pytorch.
 
 .. code-block:: text
 
-    yt-dlp -o - https://www.youtube.com/watch?v=vvOjJoSEFM0 | python play.py pipe: --encode
-
-The record function can then be used to activate recording to store clips from the livestream.
-
+    python play.py test.mp4 --vfilter format=bgr24 --segment
+    
 .. rubric::
     yolov5
 
@@ -246,17 +243,20 @@ The command to launch the example includes python initialization for the reposit
 and the width and height of the video images.
 
 .. code-block:: text
-    
+
     python play.py test.mp4 --vfilter format=bgr24 --yolov5 repo=ultralytics/yolov5;model=yolov5x6;width=1280;height=720
 
 
 .. rubric::
-    semantic segmentation
+    live stream harvesting
 
-Please refer to https://debuggercafe.com/semantic-segmentation-using-pytorch-fcn-resnet/ for detailed
-information on how to implement semantic segmentation using pytorch.
+By using the yt-dlp program in conjunction with avio, it is possible to harvest media from live streams
+from youtube and other media sites.  yt-dlp can be installed with conda forge.  To invoke with avio, use
+the stdin pipe as shown below.
 
 .. code-block:: text
 
-    python play.py test.mp4 --vfilter format=bgr24 --segment
-    
+    yt-dlp -o - https://www.youtube.com/watch?v=vvOjJoSEFM0 | python play.py pipe: --encode
+
+The record function can then be used to activate recording to store clips from the livestream.
+
