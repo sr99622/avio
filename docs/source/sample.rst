@@ -235,25 +235,26 @@ The record function can then be used to activate recording to store clips from t
 .. rubric::
     yolov5
 
-    Requires the installation of pytorch and the yolov5 requirements in addition to avio.  See the 
-    following links to get more detailed information
+Requires the installation of pytorch and the yolov5 requirements in addition to avio.  See the 
+following links to get more detailed information
 
-    https://pytorch.org/
+https://pytorch.org/
 
-    https://github.com/ultralytics/yolov5
+https://github.com/ultralytics/yolov5
 
-    The command to launch the example includes python initialization for the repository, model name
-    and the width and height of the video images.
+The command to launch the example includes python initialization for the repository, model name
+and the width and height of the video images.
 
 .. code-block:: text
+    
     python play.py test.mp4 --vfilter format=bgr24 --yolov5 repo=ultralytics/yolov5;model=yolov5x6;width=1280;height=720
 
 
 .. rubric::
     semantic segmentation
 
-    Please refer to https://debuggercafe.com/semantic-segmentation-using-pytorch-fcn-resnet/ for detailed
-    information on how to implement semantic segmentation using pytorch.
+Please refer to https://debuggercafe.com/semantic-segmentation-using-pytorch-fcn-resnet/ for detailed
+information on how to implement semantic segmentation using pytorch.
 
 .. code-block:: text
 
