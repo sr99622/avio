@@ -7,6 +7,6 @@ _generate
 *.pt
 *.egg-info
 .vscode/
-__pycache__
-_static
 _templates
+__pycache__
+
