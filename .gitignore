@@ -5,6 +5,8 @@ _generate
 *.so
 *.pyd
 *.pt
+*.cfg
+*.weights
 *.egg-info
 .vscode/
 _templates

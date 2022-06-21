@@ -37,11 +37,13 @@ class Darknet:
 	def __call__(self, arg):
 
 		img = arg[0][0]
-		dpn = arg[2][0]
+		rts = arg[2][0]
+
+		print(img.shape, rts)
 
 		classIds, scores, boxes = self.model.detect(img, confThreshold=0.2, nmsThreshold=0.4)
 
-		frame_ids = np.full((classIds.shape[0],), dpn)
+		frame_ids = np.full((classIds.shape[0],), rts)
 		track_ids = np.full((classIds.shape[0],), -1)
 
 		# dimensions are normalized to accomodate rescaling the original image in later stages

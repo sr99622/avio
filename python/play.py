@@ -61,6 +61,10 @@ class Player:
         if args.segment:
             segment = True
 
+        retinanet = False
+        if args.retinanet:
+            retinanet = True
+
         yolov5 = ""
         if args.yolov5:
             yolov5 = eval(args.yolov5)
@@ -222,6 +226,8 @@ class Player:
             process.set_python_init_arg(display, mobilenet)
         if segment:
             process.set_python(display, "./segment/interface.py", "Segment")
+        if retinanet:
+            process.set_python(display, "./retinanet.py", "RetinaNet")
             
         process.add_display(display)
         process.run()
@@ -249,6 +255,7 @@ if __name__ == "__main__":
     parser.add_argument("--deep_sort", type=ascii, help="model_name=./deep_sort/saved_model;gpu_mem_limit=6144;db_name_in=detect.db;db_name_out=track.db")
     parser.add_argument("--yolov5", type=ascii, help="repo=ultralytics/yolov5;model=yolov5x6;width=1920;height=1080")
     parser.add_argument("--mobilenet", type=ascii, help="model_name=C:/Users/sr996/Downloads/ssd_mobilenet_v2_320x320_coco17_tpu-8/saved_model;gpu_mem_limit=4096")
+    parser.add_argument("--retinanet", help="RetinaNet", action="store_true")
     parser.add_argument("--segment", help="semantic segmentation", action="store_true")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int)
