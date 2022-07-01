@@ -295,10 +295,11 @@ bool Display::display()
                 }
                 else {
                     reader->seek_found_pts = AV_NOPTS_VALUE;
-                    paused_frame = f;
                     paused = user_paused;
                 }
             }
+
+            paused_frame = f;
 
             if (Py_IsInitialized() && havePython()) {
                 if (fix_audio_pop) SDL_LockAudioDevice(audioDeviceID);
@@ -328,7 +329,6 @@ bool Display::display()
                 reader->last_video_pts = f.m_frame->pts;
 
                 if (single_step || reverse_step) {
-                    paused_frame = f;
                     single_step = false;
                     reverse_step = false;
                 }
@@ -515,7 +515,6 @@ bool Display::isPaused()
 void Display::togglePause()
 {
     paused = !paused;
-    paused_frame = f;
     rtClock.pause(paused);
     user_paused = paused;
     hud.btnPlay->hot = paused;

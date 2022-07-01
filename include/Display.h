@@ -125,7 +125,7 @@ public:
     uint64_t duration;
 
     std::deque<Frame> recent;
-	bool request_recent_clear = false;
+    bool request_recent_clear = false;
     int recent_q_size = 200;
     bool prepend_recent_write = false;
 
