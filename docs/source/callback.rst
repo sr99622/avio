@@ -27,9 +27,9 @@ used to represent video frames is BGR24.  In order to convert the frame to a
 compatible format, the avio application should include a video filter and the
 argument to the filter should include "format=bgr24".
 
-If your application produces the message "Error: unsupported pix fmt.  If you 
-intend to convert the frame to cv::Mat format, the incoming frame must be in 
-either bgr24 or bgra pixel format", you have not included this step.
+If your application produces the message "unsupported pix fmt for numpy 
+conversion, use video filter to convert format to bgr24, rgb24, bgra or rgba", 
+you have not included this step.
 
 .. _callback_registration:
 

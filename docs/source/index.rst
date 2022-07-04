@@ -9,9 +9,7 @@ avio
 Python package for processing multimedia files and streams.  It it built upon the 
 foundation of FFMPEG, but it is not a thin wrapper.  The details of using FFMPEG have been 
 abstracted away and modularized so that the developer may focus on higher level operations 
-without being concerned with the details of the underlying mechanics.  OpenCV is integrated 
-into the package as well, so that commonly used functions and formats are readily available 
-without further configuration.  
+without being concerned with the details of the underlying mechanics.
 
 Display of the video and audio streams is provided automatically, and a minimal in-screen 
 GUI is available by default for basic operations including pause, seek and single step 

@@ -41,13 +41,38 @@ PyRunner::PyRunner(const std::string& dir, const std::string& file, const std::s
 	}
 }
 
-CPyObject PyRunner::getImage(const cv::Mat& image)
+CPyObject PyRunner::getImage(Frame& f)
 {
+	// Note that this conversion will depend on the scope of Frame f to preserve data in mat_buf
+
 	CPyObject result;
 	try {
 		if (!PyArray_API) throw Exception("numpy not initialized");
-		npy_intp dimensions[3] = { image.rows, image.cols, image.channels() };
-		pData = PyArray_SimpleNewFromData(3, dimensions, NPY_UINT8, image.data);
+		int depth = -1;
+		switch (f.m_frame->format) {
+			case AV_PIX_FMT_BGR24:
+			case AV_PIX_FMT_RGB24:
+				depth = 3;
+				break;
+			case AV_PIX_FMT_BGRA:
+			case AV_PIX_FMT_RGBA:
+				depth = 4;
+				break;
+			default:
+				throw Exception("unsupported pix fmt for numpy conversion, use video filter to convert format to bgr24, rgb24, bgra or rgba");
+		}
+
+		int width = f.m_frame->width;
+		int height = f.m_frame->height;
+		int linesize = width * depth;
+		if (f.mat_buf) delete[] f.mat_buf;
+		f.mat_buf = new uint8_t[linesize * height];
+
+		for (int y = 0; y < height; y++)
+			memcpy(f.mat_buf + y * linesize, f.m_frame->data[0] + y * f.m_frame->linesize[0], linesize);
+
+		npy_intp dimensions[3] = { f.m_frame->height, f.m_frame->width, depth };
+		pData = PyArray_SimpleNewFromData(3, dimensions, NPY_UINT8, f.mat_buf);
 		if (!pData) throw Exception("pData");
 		result = Py_BuildValue("(O)", pData);
 	}
@@ -61,7 +86,7 @@ bool PyRunner::run(Frame& f, const std::string& events)
 {
 	bool result = false;
 	if (f.isValid()) {
-		CPyObject pImage = getImage(f.mat());
+		CPyObject pImage = getImage(f);
 		CPyObject pRTS = Py_BuildValue("(i)", f.m_rts);
 
 		// pts is long long so use stream writer to convert
@@ -126,17 +151,22 @@ bool PyRunner::run(Frame& f, const std::string& events)
 						uint8_t* buffer = new uint8_t[buf_size];
 						uint8_t* np_buf = (uint8_t*)PyArray_BYTES((PyArrayObject*)pImgRet);
 
+						if (f.m_frame->width != width || f.m_frame->height != height) {
+							AVPixelFormat pix_fmt = (AVPixelFormat)f.m_frame->format;
+							int64_t pts = f.m_frame->pts;
+							av_frame_free(&f.m_frame);
+							f.m_frame = av_frame_alloc();
+							f.m_frame->width = width;
+							f.m_frame->height = height;
+							f.m_frame->format = pix_fmt;
+							f.m_frame->pts = pts;
+							av_frame_get_buffer(f.m_frame, 0);
+							av_frame_make_writable(f.m_frame);
+						}
+
 						for (int y = 0; y < height; y++)
-							memcpy(buffer + y * width * depth, np_buf + y * stride, width * depth);
+							memcpy(f.m_frame->data[0] + y * f.m_frame->linesize[0], np_buf + y * stride, width * depth);
 
-						cv::Mat m(np_sizes[0], np_sizes[1], CV_8UC3, buffer);
-
-						int64_t rts = f.m_rts;
-						int64_t pts = f.m_frame->pts;
-						f = Frame(m);
-						f.m_rts = rts;
-						f.m_frame->pts = pts;
-						delete[] buffer;
 					}
 				}
 

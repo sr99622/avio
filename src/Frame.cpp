@@ -59,78 +59,10 @@ Frame::Frame(int width, int height, AVPixelFormat pix_fmt)
 	}
 }
 
-Frame::Frame(const cv::Mat& mat)
-{
-	m_rts = 0;
-	m_frame = av_frame_alloc();
-	AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
-	int width = mat.cols;
-	int height = mat.rows;
-	int depth = -1;
-
-	switch (mat.type()) {
-	case CV_8UC3:
-		pix_fmt = AV_PIX_FMT_BGR24;
-		depth = 3;
-		break;
-	case CV_8UC4:
-		pix_fmt = AV_PIX_FMT_BGRA;
-		depth = 4;
-		break;
-	default:
-		std::cout << "ERROR: unsuspported cv::Mat type" << std::endl;
-	}
-
-	m_frame = av_frame_alloc();
-	m_frame->width = width;
-	m_frame->height = height;
-	m_frame->format = pix_fmt;
-	av_frame_get_buffer(m_frame, 0);
-	av_frame_make_writable(m_frame);
-	int linesize = width * depth;
-
-	for (int y = 0; y < height; y++) 
-		memcpy(m_frame->data[0] + y * m_frame->linesize[0], mat.data + y * linesize, linesize);
-}
-
 Frame::~Frame()
 {
 	av_frame_free(&m_frame);
 	if (mat_buf) delete[] mat_buf;
-}
-
-cv::Mat Frame::mat()
-{
-	cv::Mat mat;
-	int cv_format = -1;
-	int depth = -1;
-
-	switch (m_frame->format) {
-	case AV_PIX_FMT_BGR24:
-		cv_format = CV_8UC3;
-		depth = 3;
-		break;
-	case AV_PIX_FMT_BGRA:
-		cv_format = CV_8UC4;
-		depth = 4;
-		break;
-	default:
-		std::cout << "Error: unsupported pix fmt.  If you intend to convert the frame to cv::Mat format, the incoming frame must be in either bgr24 or bgra pixel format" << std::endl;
-		return mat;
-	}
-
-	int width = m_frame->width;
-	int height = m_frame->height;
-	int linesize = width * depth;
-	if (mat_buf) delete[] mat_buf;
-	mat_buf = new uint8_t[linesize * height];
-
-	for (int y = 0; y < height; y++)
-		memcpy(mat_buf + y * linesize, m_frame->data[0] + y * m_frame->linesize[0], linesize);
-
-	mat = cv::Mat(height, width, cv_format, mat_buf, linesize);
-
-	return mat;
 }
 
 Frame& Frame::operator=(const Frame& other)

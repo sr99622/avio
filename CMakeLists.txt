@@ -10,17 +10,6 @@ if (WIN32)
 endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-if (OpenCV_INCLUDE_DIRS AND OpenCV_LIBS)
-    message("-- OpenCV is using include dirs ${OpenCV_INCLUDE_DIRS} and libs ${OpenCV_LIBS}")
-else()
-    find_package(OpenCV)
-    if (OpenCV_FOUND)
-        message("-- Found OpenCV")
-    else()
-        message("-- **WARNING** Unable to find OpenCV automatically, this may be due to the lack of OpenCV_DIR environment variable. You could also try setting -DOpenCV_INCLUDE_DIRS and -DOpenCV_LIBS locations manually")
-    endif()
-endif()
-
 if (FFMPEG_INCLUDE_DIRS AND FFMPEG_LIBRARIES)
     message("-- FFmpeg is using include dirs ${FFMPEG_INCLUDE_DIRS} and libs ${FFMPEG_LIBRARIES}")
 else()
@@ -145,7 +134,6 @@ pybind11_add_module(avio
                 
 target_link_libraries(avio PRIVATE 
                 ${Python3_LIBRARIES}
-                ${OpenCV_LIBS} 
                 ${FFMPEG_LIBRARIES}
                 ${SDL2_LIBRARIES}
                 ${SDL2_TTF_LIBRARIES}
@@ -158,7 +146,6 @@ target_include_directories(avio PUBLIC
                     include
                     ${Python3_INCLUDE_DIRS}
                     ${Python3_NumPy_INCLUDE_DIRS}
-                    ${OpenCV_INCLUDE_DIRS}
                     ${FFMPEG_INCLUDE_DIRS}
                     ${SDL2_INCLUDE_DIRS}
                     ${SDL2_TTF_INCLUDE_DIRS}

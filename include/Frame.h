@@ -9,7 +9,6 @@ extern "C" {
 }
 
 #include "Exception.h"
-#include <opencv2/opencv.hpp>
 
 namespace avio
 {
@@ -23,7 +22,6 @@ public:
 	Frame(Frame&& other) noexcept;
 	Frame(AVFrame* src);
 	Frame(int width, int height, AVPixelFormat pix_fmt);
-	Frame(const cv::Mat& mat);
 	Frame& operator=(const Frame& other);
 	Frame& operator=(Frame&& other) noexcept;
 	AVFrame* copyFrame(AVFrame* src);
@@ -34,7 +32,6 @@ public:
 	void set_rts(AVStream* stream);  // called from Decoder::decode
 	void set_pts(AVStream* stream);  // called from Encoder::encode
 	std::string description() const;
-	cv::Mat mat();
 
 	AVFrame* m_frame = NULL;
 	uint64_t m_rts;

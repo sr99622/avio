@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <Python.h>
-#include <opencv2/opencv.hpp>
 #include "pyhelper.h"
 #include "Queue.h"
 #include "Frame.h"
@@ -15,7 +14,7 @@ class PyRunner {
 public:
 	PyRunner() {}
 	PyRunner(const std::string& dir, const std::string& file, const std::string& py_class, const std::string& arg);
-	CPyObject getImage(const cv::Mat& image);
+	CPyObject getImage(Frame& f);
 	bool run(Frame& f, const std::string& events);
 
 	CPyObject pClass = nullptr;

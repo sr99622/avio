@@ -146,30 +146,6 @@ string is passed as an argument to the directive.
     python play.py test.mp4 --echo key1=value1;key2=value2 --vfilter format=bgr24
 
 .. rubric::
-    darknet callback
-
-The darknet callback program is included as a demonstration of the use of advanced functions using OpenCV.
-The callback requires that a valid darknet model be present on the host machine.  Pre trained models can be
-found in the Darknet repository https://github.com/AlexeyAB/darknet#pre-trained-models.  The first few
-models in the list are for training, look down the page a bit for the ones for inference.
-
-yolov4.cfg - 245 MB: yolov4.weights (Google-drive mirror yolov4.weights ) 
-paper Yolo v4 just change width= and height= parameters in yolov4.cfg file 
-and use the same yolov4.weights file for all cases:
-
-The arguments to the --darknet directive tell the python callback where to find the model and its cfg file.
-There is an additional parameter that the callback accepts that will create a database that will store the 
-results of the detections.  This can be useful if you want to try different actions with the results of the 
-detections without having to re-run the detector.
-
-Note that the detection will be very slow if the OpenCV configuration does not include GPU functionality.
-See the section on compiling OpenCV with GPU for further information.
-
-.. code-block::
-
-    python play.py test.mp4 --darknet cfg=yolov4.cfg;weights=yolov4.weights;db_name=detect.db --vfilter format=bgr24 --no_audio
-
-.. rubric::
     db_read callback
 
 If the db_name option was used during the darknet callback, the database will contain a record of the 
