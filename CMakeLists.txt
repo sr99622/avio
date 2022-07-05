@@ -14,10 +14,15 @@ if (FFMPEG_INCLUDE_DIRS AND FFMPEG_LIBRARIES)
     message("-- FFmpeg is using include dirs ${FFMPEG_INCLUDE_DIRS} and libs ${FFMPEG_LIBRARIES}")
 else()
     find_package(FFmpeg)
-    if (FFMPEG_FOUND)
-        message("-- Found FFmpeg")
+    if (FFMPEG_INCLUDE_DIRS)
+        message("-- Found FFmpeg Include Directories ${FFMPEG_INCLUDE_DIRS}")
     else()    
-        message("-- **WARNING** Unable to find FFmpeg automatically.  You will need to set the -DFFMPEG_INCLUDE_DIRS and -DFFMPEG_LIBRARIES manually")
+        message("-- **WARNING** Unable to find FFmpeg Include Directories automatically.  Use -DFFMPEG_INCLUDE_DIRS location manually")
+    endif()
+    if (FFMPEG_LIBRARIES)
+        message("-- Found FFmpeg Libraries ${FFMPEG_LIBRARIES}")
+    else()    
+        message("-- **WARNING** Unable to find FFmpeg Libraries automatically.  Use -DFFMPEG_LIBRARIES to set location manually")
     endif()
 endif()
 
@@ -88,30 +93,58 @@ else()
     endif()
 endif()
 
-if (Python3_INCLUDE_DIRS AND Python3_LIBRARIES AND Python3_NumPy_INCLUDE_DIRS)
+if (Python_INCLUDE_DIRS AND Python_LIBRARIES AND Python_NumPy_INCLUDE_DIRS)
     message(-- "Python is using include dirs ${Python_INCLUDE_DIRS} and lib ${Python_LIBRARIES}, Numpy is using ${Python_NumPy_INCLUDE_DIRS}")
 else()
     if (WIN32)
-	find_package(Python3 COMPONENTS Interpreter Development)
+	    find_package(Python COMPONENTS Interpreter Development)
     else ()
-	find_package(Python3 COMPONENTS Interpreter Development NumPy)
+	    find_package(Python COMPONENTS Interpreter Development NumPy)
     endif()
-    if (Python3_FOUND)
-        message("-- Found Python")
-        if (Python3_NumPy_FOUND)
-            message("-- Found NumPy")        
-        else()
-            if (EXISTS "$ENV{CONDA_PREFIX}/Lib/site-packages/numpy/core/include")
-                set(Python3_NumPy_INCLUDE_DIRS $ENV{CONDA_PREFIX}/Lib/site-packages/numpy/core/include)
+    if (Python_LIBRARIES)
+    	message("-- Python Libraries Found")
+    else()
+        if (UNIX)
+    	    get_filename_component(Python_EXE $ENV{CONDA_PYTHON_EXE} REALPATH)
+    	    get_filename_component(Python_VER ${Python_EXE} NAME)
+    	    if (EXISTS "$ENV{CONDA_PREFIX}/lib/lib${Python_VER}.so")
+	        message("-- Found Python Libraries")
+	        set(Python_LIBRARIES $ENV{CONDA_PREFIX}/lib/lib${Python_VER}.so)
             else()
-                message("-- **WARNING** Unable to find numpy automatically, use -DPython3_NumPy_INCLUDE_DIRS to set location manually")
+               message("-- **WARNING** Unable to find Python Libraries.  Use -DPython_LIBRARIES to set location manually")
             endif()
         endif()
+    endif()
+    if (Python_INCLUDE_DIRS)
+    	message("-- Python Include Directories Found")
     else()
-        message("-- **WARNING** Unable to find python automatically, use -DPython_LIBRARIES to set python lib and -DPython_INCLUDE_DIRS and -DPython_NumPy_INCLUDE_DIRS")
+        if (UNIX)
+    	    get_filename_component(Python_EXE $ENV{CONDA_PYTHON_EXE} REALPATH)
+    	    get_filename_component(Python_VER ${Python_EXE} NAME)
+    	    if (EXISTS "$ENV{CONDA_PREFIX}/include/${Python_VER}")
+	        message("-- Found Python Include Directories")
+	        set(Python_INCLUDE_DIRS $ENV{CONDA_PREFIX}/include/${Python_VER})
+            else()
+               message("-- **WARNING** Unable to find Python Include Directories.  Use -DPython_INCLUDE_DIRS to set location manually")
+            endif()
+        endif()
+    endif()
+    if (Python_NumPy_INCLUDE_DIRS)
+        message("-- Found NumPy")        
+    else()
+#    	message("CMAKE_SYSTEM ${CMAKE_SYSTEM}  CMAKE_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}")
+    	if (UNIX)
+    	    get_filename_component(Python_EXE $ENV{CONDA_PYTHON_EXE} REALPATH)
+    	    get_filename_component(Python_VER ${Python_EXE} NAME)
+    	    if (EXISTS "$ENV{CONDA_PREFIX}/lib/${Python_VER}/site-packages/numpy/core/include")
+	        message("-- Found NumPy Include Directories")
+	        set(Python_NumPy_INCLUDE_DIRS $ENV{CONDA_PREFIX}/lib/${Python_VER}/site-packages/numpy/core/include)
+            else()
+               message("-- **WARNING** Unable to find NumPy Include Directories.  Use -DPython_NumPy_INCLUDE_DIRS to set location manually")
+            endif()
+        endif()
     endif()
 endif()
-
 
 pybind11_add_module(avio 
                         src/avio.cpp
@@ -130,10 +163,9 @@ pybind11_add_module(avio
                         src/Pipe.cpp
                         src/PyRunner.cpp
                     )
-
                 
 target_link_libraries(avio PRIVATE 
-                ${Python3_LIBRARIES}
+                ${Python_LIBRARIES}
                 ${FFMPEG_LIBRARIES}
                 ${SDL2_LIBRARIES}
                 ${SDL2_TTF_LIBRARIES}
@@ -145,7 +177,7 @@ target_link_libraries(avio PRIVATE
 target_include_directories(avio PUBLIC
                     include
                     ${Python3_INCLUDE_DIRS}
-                    ${Python3_NumPy_INCLUDE_DIRS}
+                    ${Python_NumPy_INCLUDE_DIRS}
                     ${FFMPEG_INCLUDE_DIRS}
                     ${SDL2_INCLUDE_DIRS}
                     ${SDL2_TTF_INCLUDE_DIRS}
