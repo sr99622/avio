@@ -177,7 +177,8 @@ bool PyRunner::run(Frame& f, const std::string& events)
 						char* result = PyBytes_AsString(str);
 						std::size_t pos = 0;
 						std::string s(result);
-						s.erase(std::remove(s.begin(), s.end(), '\''), s.end());
+						s.erase(0, 1);
+						s.erase(s.length()-1, s.length());
 						try {
 							int64_t pts = std::stoll(s, &pos);
 							f.m_frame->pts = pts;
