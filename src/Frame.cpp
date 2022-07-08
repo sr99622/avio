@@ -72,6 +72,7 @@ Frame& Frame::operator=(const Frame& other)
 		av_frame_free(&m_frame);
 		m_frame = av_frame_clone(other.m_frame);
 		av_frame_make_writable(m_frame);
+		m_faded = other.m_faded;
 	}
 	else {
 		invalidate();
@@ -87,6 +88,7 @@ Frame& Frame::operator=(Frame&& other) noexcept
 		m_frame = other.m_frame;
 		av_frame_make_writable(m_frame);
 		other.m_frame = NULL;
+		m_faded = other.m_faded;
 	}
 	else {
 		invalidate();

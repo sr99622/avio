@@ -260,25 +260,6 @@ streams will be different, so the application must convert the PTS to a value th
 to the real time that a frame should present.  This conversion is handled behind the scenes by 
 avio and is represented in a frame variable named m_rts.
 
-The display will also need to know the characteristics of the individual streams so that it
-may present the frames properly.  In the case of video streams, the display is able to get
-the data it needs from the stream itself.  However, in the case of audio streams, the display
-must be told ahead of time what parameters to expect.  For this reason, the developer is
-required to set parameters for audio streams, but not video.  Future versions of avio will
-hopefully be able to auto configure for audio, but for now, this is the case.
-
-The parameters required for audio configuration are listed below.  These parameters may be
-obtained from either the audio decoder itself, or the corresponding audio filter.  Note 
-that in the underlying ffmpeg code that frame_size and nb_samples are used interchangeably.
-
-.. code-block:: python
-
-    Display.sample_rate
-    Display.channels
-    Display.channel_layout
-    Display.sample_format
-    Display.frame_size
-
 The code below shows a simple application with the display configured.  As with other modules,
 the display gets data from queues attached to the previous module in the chain.
 
@@ -302,14 +283,7 @@ the display gets data from queues attached to the previous module in the chain.
 
     display = avio.Display(reader)
     display.set_video_in(videoDecoder.video_out())
-
     display.set_audio_in(audioDecoder.audio_out())
-    display.sample_rate = audioDecoder.sample_rate()
-    display.channels = audioDecoder.channels()
-    display.channel_layout = audioDecoder.channel_layout()
-    display.sample_format = audioDecoder.sample_format()
-    display.frame_size = audioDecoder.frame_size()
-    display.audio_playback_format = avio.AV_SAMPLE_FMT_U8
 
     process.add_reader(reader)
     process.add_decoder(videoDecoder)
@@ -363,14 +337,7 @@ Note that the display audio parameters should now reflect the state of the audio
 
     display = avio.Display(reader)
     display.set_video_in(videoFilter.video_out())
-
     display.set_audio_in(audioFilter.audio_out())
-    display.sample_rate = audioFilter.sample_rate()
-    display.channels = audioFilter.channels()
-    display.channel_layout = audioFilter.channel_layout()
-    display.sample_format = audioFilter.sample_format()
-    display.frame_size = audioFilter.frame_size()
-    display.audio_playback_format = avio.AV_SAMPLE_FMT_FLT
 
     process.add_reader(reader)
     process.add_decoder(videoDecoder)

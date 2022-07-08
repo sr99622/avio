@@ -109,7 +109,6 @@ class Player:
             display.pin_hud(True)
         if disable_hud:
             display.hud_enabled = False
-        display.fix_audio_pop = False
         display.ignore_video_pts = ignore_video_pts
         display.prepend_recent_write = True
         #display.font_file = "/home/stephen/source/avio/avio/Roboto-Regular.ttf"
@@ -144,11 +143,6 @@ class Player:
             audioFilter.set_audio_in(audioDecoder.audio_out())
             audioFilter.set_audio_out("afq_filter")
             display.set_audio_in(audioFilter.audio_out())
-            display.sample_rate = audioFilter.sample_rate()
-            display.channels = audioFilter.channels()
-            display.channel_layout = audioFilter.channel_layout()
-            display.sample_format = audioFilter.sample_format()
-            display.frame_size = audioFilter.frame_size()
             display.audio_playback_format = avio.AV_SAMPLE_FMT_U8
             process.add_decoder(audioDecoder)
             process.add_filter(audioFilter)

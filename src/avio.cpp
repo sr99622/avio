@@ -290,6 +290,8 @@ public:
         if (display) {
 
             if (writer) display->writer = writer;
+            if (audioDecoder) display->audioDecoder = audioDecoder;
+            if (audioFilter) display->audioFilter = audioFilter;
 
             if (!display->vfq_in_name.empty()) display->vfq_in = frame_queues[display->vfq_in_name];
             if (!display->afq_in_name.empty()) display->afq_in = frame_queues[display->afq_in_name];
@@ -452,14 +454,8 @@ PYBIND11_MODULE(avio, m)
         .def_readwrite("afq_in_name", &Display::afq_in_name)
         .def_readwrite("vfq_out_name", &Display::vfq_out_name)
         .def_readwrite("afq_out_name", &Display::afq_out_name)
-        .def_readwrite("sample_rate", &Display::sample_rate)
-        .def_readwrite("channels", &Display::channels)
-        .def_readwrite("channel_layout", &Display::channel_layout)
-        .def_readwrite("sample_format", &Display::sample_format)
-        .def_readwrite("frame_size", &Display::nb_samples)
-        .def_readwrite("audio_playback_format", &Display::audio_playback_format)
+        .def_readwrite("audio_playback_format", &Display::sdl_sample_format)
         .def_readwrite("disable_audio", &Display::disable_audio)
-        .def_readwrite("fix_audio_pop", &Display::fix_audio_pop)
         .def_readwrite("hud_enabled", &Display::hud_enabled)
         .def_readwrite("ignore_video_pts", &Display::ignore_video_pts)
         .def_readwrite("recent_q_size", &Display::recent_q_size)

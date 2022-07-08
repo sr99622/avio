@@ -54,7 +54,7 @@ void Hud::render(SDL_Renderer* renderer)
 
 void Hud::fade(Frame& f)
 {
-    if (f.m_frame->pts == last_pts) return;
+    if (f.m_faded) return;
 
     if (((Display*)display)->recording) return;
 
@@ -70,7 +70,7 @@ void Hud::fade(Frame& f)
         menu_row++;
     }
 
-    last_pts = f.m_frame->pts;
+    f.m_faded = true;
 }
 
 void Hud::handleEvent(SDL_Event& e, Frame& f) 

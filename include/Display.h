@@ -11,6 +11,7 @@
 #include "Frame.h"
 #include "Clock.h"
 #include "Decoder.h"
+#include "Filter.h"
 #include "PyRunner.h"
 #include "Hud.h"
 #include "Reader.h"
@@ -36,7 +37,7 @@ public:
     ~Display();
 
     void init();
-    int initAudio(int sample_rate, AVSampleFormat sample_fmt, int channels, uint64_t channel_layout);
+    int initAudio(int sample_rate, AVSampleFormat sample_fmt, int channels, uint64_t channel_layout, int stream_nb_sampples);
     int initVideo(int width, int height, AVPixelFormat pix_fmt);
     static void AudioCallback(void* userdata, uint8_t* stream, int len);
     void videoPresentation();
@@ -44,7 +45,7 @@ public:
     bool display();
     bool havePython();
     void pin_hud(bool arg);
-
+    
     bool paused = false;
     bool user_paused = false;
     Frame paused_frame;
@@ -67,7 +68,7 @@ public:
     SDL_Renderer* renderer = NULL;
     SDL_Texture* texture = NULL;
     SDL_Surface* screen = NULL;
-    SDL_AudioSpec want = { 0 };
+    SDL_AudioSpec sdl = { 0 };
     SDL_AudioSpec have = { 0 };
 
     std::string pythonDir;
@@ -100,27 +101,24 @@ public:
     std::string font_file;
     bool hud_enabled = true;
 
-    SwrContext* swr_ctx;
     SDL_AudioDeviceID audioDeviceID;
     Clock rtClock;
 
-    int sample_rate = 0;
-    int channels = 0;
-    int nb_samples = 0;
-    int64_t channel_layout = 0;
-    AVSampleFormat sample_format = AV_SAMPLE_FMT_NONE;
-    AVSampleFormat audio_playback_format = AV_SAMPLE_FMT_NONE;
+    SwrContext* swr_ctx;
+    AVSampleFormat sdl_sample_format = AV_SAMPLE_FMT_S16;
+
+    uint8_t* swr_buffer = nullptr;
+    int swr_buffer_size = 0;
+    Queue<char> sdl_buffer;
+    int audio_buffer_len = 0;
+    bool disable_audio = false;
+    bool fix_audio_pop = true;
+    bool ignore_video_pts = false;
+    bool audio_eof = false;
 
     int width = 0;
     int height = 0;
     AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
-
-    uint8_t* audioBuf = nullptr;
-    int dataSize = 0;
-    bool disable_audio = false;
-    bool fix_audio_pop = false;
-    bool ignore_video_pts = false;
-    bool audio_eof = false;
 
     uint64_t start_time;
     uint64_t duration;
@@ -132,6 +130,8 @@ public:
 
     Reader* reader = nullptr;
     Writer* writer = nullptr;
+    Decoder* audioDecoder = nullptr;
+    Filter* audioFilter = nullptr;
 
     ExceptionHandler ex;
 };

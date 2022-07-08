@@ -426,27 +426,9 @@ Display handles the presentation of the media.  It also hosts the python interfa
     :param reader: Required application reader
     :type desc: avio.Reader
 
-    .. py:attribute:: sample_rate
-
-        :type: int
-
-    .. py:attribute:: channels
-
-        :type: int
-
-    .. py:attribute:: channel_layout
-
-        :type: int
-
-    .. py:attribute:: frame_size
-
-        :type: int
-
-    .. py:attribute:: sample_format
-
-        :type: avio.AVSampleFormat
-
     .. py:attribute:: audio_playback_format
+
+        This attribute can be used to change the playback format for audio.  The default is S16
 
         :type: avio.AVSampleFormat
 
@@ -454,13 +436,6 @@ Display handles the presentation of the media.  It also hosts the python interfa
 
         This attribute can be used to ignore audio streams.  Useful if the audio subsystem is not 
         working for some reason
-
-        :type: bool
-
-    .. py:attribute:: fix_audio_pop
-
-        During seek operations, the user may experience a pop sound on audio.  Using this attribute set 
-        to true will reduce that noise. 
 
         :type: bool
 

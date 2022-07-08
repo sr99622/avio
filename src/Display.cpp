@@ -28,8 +28,13 @@ void Display::init()
             font_file = dir.string();
         }
 
-        if (sample_rate > 0) {
-            ex.ck(initAudio(sample_rate, sample_format, channels, channel_layout));
+        if (audioFilter) {
+            std::cout << "configure filter" << std::endl;
+            initAudio(audioFilter->sample_rate(), audioFilter->sample_format(), audioFilter->channels(), audioFilter->channel_layout(), audioFilter->frame_size());
+        }
+        else if (audioDecoder) {
+            std::cout << "configure decoder" << std::endl;
+            initAudio(audioDecoder->sample_rate(), audioDecoder->sample_format(), audioDecoder->channels(), audioDecoder->channel_layout(), audioDecoder->frame_size());
         }
     }
     catch (const Exception& e) {
@@ -40,7 +45,7 @@ void Display::init()
 Display::~Display()
 {
     if (SDL_WasInit(SDL_INIT_AUDIO)) SDL_PauseAudioDevice(audioDeviceID, true);
-    if (audioBuf) delete[] audioBuf;
+    if (swr_buffer) delete[] swr_buffer;
     if (texture)  SDL_DestroyTexture(texture);
     if (renderer) SDL_DestroyRenderer(renderer);
     if (window)   SDL_DestroyWindow(window);
@@ -187,10 +192,29 @@ PlayState Display::getEvents(std::vector<SDL_Event>* events)
                 state = PlayState::PAUSE;
             }
             else if (event.key.keysym.sym == SDLK_LEFT && event.key.repeat == 0) {
-                reader->seek_target_pts = reader->last_video_pts - av_q2d(av_inv_q(reader->video_time_base()));
+                if (vfq_in) {
+                    reader->seek_target_pts = reader->last_video_pts - av_q2d(av_inv_q(reader->video_time_base()));
+                }
+                else {
+                    float pct = (f.m_rts - reader->start_time()) / (float)reader->duration();
+                    if (pct > 0.02)
+                        pct -= 0.01;
+                    else
+                        pct = 0.0;
+                    reader->request_seek(pct);
+                }
             }
             else if (event.key.keysym.sym == SDLK_RIGHT && event.key.repeat == 0) {
-                reader->seek_target_pts = reader->last_video_pts + av_q2d(av_inv_q(reader->video_time_base()));
+                if (vfq_in) {
+                    reader->seek_target_pts = reader->last_video_pts + av_q2d(av_inv_q(reader->video_time_base()));
+                }
+                else {
+                    float pct = (f.m_rts - reader->start_time()) / (float)reader->duration();
+                    if (pct < 0.98) {
+                        pct += 0.01;
+                        reader->request_seek(pct);
+                    }
+                }
             }
             else if (event.key.keysym.sym == SDLK_s) {
                 if (paused) single_step = true;
@@ -227,7 +251,7 @@ bool Display::display()
 
         if (paused) 
         {
-            if (afq_in) {
+            if (afq_in && vfq_in) {
                 while (afq_in->size() > 0) {
                     afq_in->pop(f);
                 }
@@ -359,37 +383,38 @@ bool Display::display()
     return playing;
 }
 
-int Display::initAudio(int sample_rate, AVSampleFormat sample_format, int channels, uint64_t channel_layout)
+int Display::initAudio(int stream_sample_rate, AVSampleFormat stream_sample_format, int stream_channels, uint64_t stream_channel_layout, int stream_nb_samples)
 {
     int ret = 0;
     try {
 
-        if (nb_samples == 0) {
-            int audio_frame_size = av_samples_get_buffer_size(NULL, channels, 1, audio_playback_format, 1);
-            int bytes_per_second = av_samples_get_buffer_size(NULL, channels, sample_rate, audio_playback_format, 1);
-            nb_samples = bytes_per_second * 0.02f / audio_frame_size;
+        if (stream_nb_samples == 0) {
+            int audio_frame_size = av_samples_get_buffer_size(NULL, stream_channels, 1, sdl_sample_format, 1);
+            int bytes_per_second = av_samples_get_buffer_size(NULL, stream_channels, stream_sample_rate, sdl_sample_format, 1);
+            stream_nb_samples = bytes_per_second * 0.02f / audio_frame_size;
+            std::cout << "bytes_per_second: " << bytes_per_second << " stream_nb_samples: " << stream_nb_samples << std::endl;
         }
 
-        want.channels = channels;
-        want.freq = sample_rate;
-        want.silence = 0;
-        want.samples = nb_samples;
-        want.userdata = this;
-        want.callback = AudioCallback;
+        sdl.channels = stream_channels;
+        sdl.freq = stream_sample_rate;
+        sdl.silence = 0;
+        sdl.samples = stream_nb_samples;
+        sdl.userdata = this;
+        sdl.callback = AudioCallback;
 
-        switch (audio_playback_format) {
+        switch (sdl_sample_format) {
         case AV_SAMPLE_FMT_FLT:
-            want.format = AUDIO_F32;
+            sdl.format = AUDIO_F32;
             break;
         case AV_SAMPLE_FMT_S16:
-            want.format = AUDIO_S16;
+            sdl.format = AUDIO_S16;
             break;
         case AV_SAMPLE_FMT_U8:
-            want.format = AUDIO_U8;
+            sdl.format = AUDIO_U8;
             break;
         default:
             const char* result = "unkown sample format";
-            const char* name = av_get_sample_fmt_name(audio_playback_format);
+            const char* name = av_get_sample_fmt_name(sdl_sample_format);
             if (name)
                 result = name;
             std::cout << "ERROR: incompatible sample format: " << result << std::endl;
@@ -397,11 +422,11 @@ int Display::initAudio(int sample_rate, AVSampleFormat sample_format, int channe
             std::exit(0);
         }
 
-        dataSize = av_samples_get_buffer_size(NULL, want.channels, want.samples, audio_playback_format, 1);
-        audioBuf = new uint8_t[dataSize];
+        audio_buffer_len = av_samples_get_buffer_size(NULL, sdl.channels, sdl.samples, sdl_sample_format, 1);
+        sdl_buffer.set_max_size(audio_buffer_len * 10);
 
-        ex.ck(swr_ctx = swr_alloc_set_opts(NULL, channel_layout, audio_playback_format, sample_rate,
-            channel_layout, sample_format, sample_rate, 0, NULL), SASO);
+        ex.ck(swr_ctx = swr_alloc_set_opts(NULL, stream_channel_layout, sdl_sample_format, stream_sample_rate,
+            stream_channel_layout, stream_sample_format, stream_sample_rate, 0, NULL), SASO);
         ex.ck(swr_init(swr_ctx), SI);
 
         if (!SDL_WasInit(SDL_INIT_AUDIO)) {
@@ -409,7 +434,7 @@ int Display::initAudio(int sample_rate, AVSampleFormat sample_format, int channe
                 throw Exception(std::string("SDL audio init error: ") + SDL_GetError());
         }
 
-        audioDeviceID = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
+        audioDeviceID = SDL_OpenAudioDevice(NULL, 0, &sdl, &have, 0);
         if (audioDeviceID == 0) {
             const int count = SDL_GetNumAudioDevices(0);
             if (count == 0) {
@@ -429,13 +454,11 @@ int Display::initAudio(int sample_rate, AVSampleFormat sample_format, int channe
     return ret;
 }
 
-void Display::AudioCallback(void* userdata, uint8_t* stream, int len)
+void Display::AudioCallback(void* userdata, uint8_t* audio_buffer, int len)
 {
     Display* d = (Display*)userdata;
-    memset(stream, 0, len);
+    memset(audio_buffer, 0, len);
     Frame f;
-    unsigned int audioBufSize = 0;
-    unsigned int audioBufIndex = 0;
 
     try {
         if (d->paused) {
@@ -444,51 +467,30 @@ void Display::AudioCallback(void* userdata, uint8_t* stream, int len)
             }
         }
 
-        while (len > 0) {
-            if (audioBufIndex >= audioBufSize) {
-                audioBufSize = 0;
-                audioBufIndex = 0;
+        if (d->disable_audio || d->user_paused)
+            return;
 
+        while (len > 0) {
+            if (d->sdl_buffer.size() < d->audio_buffer_len) {
                 d->afq_in->pop(f);
                 if (d->afq_out) d->afq_out->push(f);
 
-                if (d->disable_audio)
-                    return;
-
-                if (d->user_paused)
-                    return;
-
                 if (f.isValid()) {
-                    if (!d->vfq_in) {
-                        d->rtClock.sync(f.m_rts); 
-                        d->reader->seek_found_pts = AV_NOPTS_VALUE;
-                    }
-
                     uint64_t channels = f.m_frame->channels;
                     int nb_samples = f.m_frame->nb_samples;
                     const uint8_t** data = (const uint8_t**)&f.m_frame->data[0];
-
-                    int linesize = 0;
-                    audioBufSize = av_samples_get_buffer_size(&linesize, channels, nb_samples, d->audio_playback_format, 0);
-
-                    if (audioBufSize == d->dataSize) {
-                        swr_convert(d->swr_ctx, &d->audioBuf, nb_samples, data, nb_samples);
-                        int remainder = audioBufSize - audioBufIndex;
-                        if (remainder > len) remainder = len;
-                        if (remainder > 0) memcpy(stream, d->audioBuf + audioBufIndex, remainder);
-                        d->reader->last_audio_pts = f.m_frame->pts;
-
-                        len -= remainder;
-                        stream += remainder;
-                        audioBufIndex += remainder;
+                    int frame_buffer_size = av_samples_get_buffer_size(NULL, channels, nb_samples, d->sdl_sample_format, 0);
+                        
+                    if (frame_buffer_size != d->swr_buffer_size) {
+                        if (d->swr_buffer) delete[] d->swr_buffer;
+                        d->swr_buffer = new uint8_t[frame_buffer_size];
+                        d->swr_buffer_size = frame_buffer_size;
                     }
-                    else {
-                        std::stringstream str;
-                        str << "Inconsistent data sizes audioBufSize: " << audioBufSize << " dataSize: " << d->dataSize;
-                        str << " frame nb_samples: " << nb_samples;
-                        d->ex.msg(str.str());
-                        return;
-                    }
+
+                    swr_convert(d->swr_ctx, &d->swr_buffer, nb_samples, data, nb_samples);
+                    for (int i = 0; i < d->swr_buffer_size; i++)
+                        d->sdl_buffer.push(d->swr_buffer[i]);
+
                 }
                 else {
                     SDL_PauseAudioDevice(d->audioDeviceID, true);
@@ -499,9 +501,19 @@ void Display::AudioCallback(void* userdata, uint8_t* stream, int len)
                         SDL_Event event;
                         event.type = SDL_QUIT;
                         SDL_PushEvent(&event);
+                        return;
                     }
                 }
             }
+
+            while (d->sdl_buffer.size() > 0 && len > 0) {
+                audio_buffer[d->audio_buffer_len - len] = d->sdl_buffer.pop();
+                len--;
+            }
+
+            d->rtClock.sync(f.m_rts); 
+            d->reader->seek_found_pts = AV_NOPTS_VALUE;
+
         }
     }
     catch (const QueueClosedException& e) { }
@@ -561,11 +573,11 @@ std::string Display::audioDeviceStatus() const
         str << "audio device: " << i << " name: " << SDL_GetAudioDeviceName(i, output) << "\n";
 
     str << "selected audio device ID (+2): " << audioDeviceID << "\n";
-    str << "CHANNELS  want: " << (int)want.channels << "\n          have: " << (int)have.channels << "\n";
-    str << "FREQUENCY want: " << want.freq << "\n          have: " << have.freq << "\n";
-    str << "SAMPLES   want: " << want.samples << "\n          have: " << have.samples << "\n";
-    str << "FORMAT    want: " << sdlAudioFormatName(want.format) << "\n          have: " << sdlAudioFormatName(have.format) << "\n";
-    str << "SIZE      want: " << want.size << "\n          have: " << have.size << "\n";
+    str << "CHANNELS  want: " << (int)sdl.channels << "\n          have: " << (int)have.channels << "\n";
+    str << "FREQUENCY want: " << sdl.freq << "\n          have: " << have.freq << "\n";
+    str << "SAMPLES   want: " << sdl.samples << "\n          have: " << have.samples << "\n";
+    str << "FORMAT    want: " << sdlAudioFormatName(sdl.format) << "\n          have: " << sdlAudioFormatName(have.format) << "\n";
+    str << "SIZE      want: " << sdl.size << "\n          have: " << have.size << "\n";
     return str.str();
 }
 

@@ -101,6 +101,11 @@ void ProgressBar::handleEvent(const SDL_Event& e)
 					float pct = (e.button.x - x) / (float)width;
 					last_click_x = e.button.x;
 					((Hud*)hud)->reader->request_seek(pct);
+					Display* display = (Display*)((Hud*)hud)->display;
+					if (display->paused && !display->vfq_in) {
+						pct_progress = pct;
+						render(display->renderer);
+					}
 				}
 			}
 		}
