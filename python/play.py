@@ -1,5 +1,7 @@
-import avio
 import argparse
+import os
+
+import avio
 
 from stats import Stats
 
