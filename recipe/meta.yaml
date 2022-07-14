@@ -19,7 +19,7 @@ requirements:
     - cmake
     - ninja
     - numpy==1.23.0
-    - ffmpeg==4.3.1 #[win]
+    - ffmpeg==4.4.2 #[win]
     - ffmpeg==5.0.1 #[unix]
     - SDL2_ttf==2.0.15
 
@@ -27,14 +27,14 @@ requirements:
     - python==3.9
     - pip
     - numpy==1.23.0
-    - ffmpeg==4.3.1 #[win]
+    - ffmpeg==4.4.2 #[win]
     - ffmpeg==5.0.1 #[unix]
     - SDL2_ttf==2.0.15
 
   run:
     - python==3.9
     - numpy==1.23.0
-    - ffmpeg==4.3.1 #[win]
+    - ffmpeg==4.4.2 #[win]
     - ffmpeg==5.0.1 #[unix]
     - SDL2_ttf==2.0.15
 

@@ -78,6 +78,7 @@ CPyObject PyRunner::getImage(Frame& f)
 	}
 	catch (const Exception& e) {
 		ex.msg(e.what(), MsgPriority::CRITICAL, "PyRunner::getImage exception: ");
+		std::exit(0);
 	}
 	return result;
 }

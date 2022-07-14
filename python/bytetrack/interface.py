@@ -98,86 +98,95 @@ class Argument:
     match_thresh = 0.8
     aspect_ratio_thresh = 1.6
     min_box_area = 10.0
-    ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
-    trt = True
-    fp16 = False
-    trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
+    #ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    trt = False
+    fp16 = True
+    #trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
+    trt_file = "C:/users/sr996/source/repos/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
 
 class ByteTrack:
     def __init__(self):
-        print("bytetrack.__init__")
+        try :
+            print("bytetrack.__init__")
 
-        self.args = Argument()
-        print(self.args.mot20)
-        self.exp = get_exp("yolox_l_mix_det.py", None)
-        print("exp.name", self.exp.exp_name)
-        device = torch.device("cuda")
-        model = self.exp.get_model().to(device)
-        logger.info("Model Summary: {}".format(get_model_info(model, self.exp.test_size)))
-        model.eval()
+            self.args = Argument()
+            print(self.args.mot20)
+            self.exp = get_exp("yolox_l_mix_det.py", None)
+            print("exp.name", self.exp.exp_name)
+            device = torch.device("cuda")
+            model = self.exp.get_model().to(device)
+            logger.info("Model Summary: {}".format(get_model_info(model, self.exp.test_size)))
+            model.eval()
 
-        if not self.args.trt:
-            ckpt_file = self.args.chpt
-            logger.info("loading checkpoint")
-            ckpt = torch.load(ckpt_file, map_location="cpu")
-            model.load_state_dict(ckpt["model"])
-            logger.info("Loaded checkpoint done")
-        
-        if self.args.fp16:
-            model = model.half()
+            if self.args.trt: 
+                print("loading TensorRT model: ", self.args.trt_file)
+                model.head.decode_in_inference = False
+                decoder = model.head.decode_outputs
+                trt_file = self.args.trt_file
+            else:
+                ckpt_file = self.args.ckpt
+                logger.info("loading checkpoint")
+                ckpt = torch.load(ckpt_file, map_location="cpu")
+                model.load_state_dict(ckpt["model"])
+                logger.info("Loaded checkpoint done")
+                decoder = None
+                trt_file = None
 
-        if self.args.trt:
-            model.head.decode_in_inference = False
-            decoder = model.head.decode_outputs
-            trt_file = self.args.trt_file
-        else:
-            decoder = None
-            trt_file = None
+                if self.args.fp16:
+                    model = model.half()
 
-        self.predictor = Predictor(model, self.exp, trt_file, decoder, device, self.args.fp16)
-        self.tracker = BYTETracker(self.args)
-        self.timer = Timer()
-        self.frame_id = 0
-        print("init complete")
+            self.predictor = Predictor(model, self.exp, trt_file, decoder, device, self.args.fp16)
+            self.tracker = BYTETracker(self.args)
+            self.timer = Timer()
+            self.frame_id = 0
+            print("init complete")
+        except BaseException as err:
+            print(f"Unexpected {err=}, {type(err)=}")
+            raise
 
     def __call__(self, arg):
+        try :
+            self.timer.tic()
 
-        self.timer.tic()
-
-        img = arg[0][0]
-        rts = arg[2][0]
-        #print(rts)
-        #print("image shape", img.shape)
-        outputs, img_info = self.predictor.inference(img, self.timer)
-        #print(outputs)
-        if outputs[0] is not None:
-            #print(outputs[0].shape)
-            online_targets = self.tracker.update(outputs[0], [img_info['height'], img_info['width']], self.exp.test_size)
-            online_tlwhs = []
-            online_ids = []
-            online_scores = []
-            for t in online_targets:
-                tlwh = t.tlwh
-                tid = t.track_id
-                vertical = tlwh[2] / tlwh[3] > self.args.aspect_ratio_thresh
-                if tlwh[2] * tlwh[3] > self.args.min_box_area and not vertical:
-                    online_tlwhs.append(tlwh)
-                    online_ids.append(tid)
-                    online_scores.append(t.score)
-                
-            self.timer.toc()
-            online_im = plot_tracking(
-                img_info['raw_img'], online_tlwhs, online_ids, frame_id = self.frame_id + 1, fps=1. / self.timer.average_time
-            )
-        else:
-            print('no return')
-            self.timer.toc()
-            online_im = img_info['raw_img']
-        
-        self.frame_id += 1
+            img = arg[0][0]
+            rts = arg[2][0]
+            #print(rts)
+            #print("image shape", img.shape)
+            outputs, img_info = self.predictor.inference(img, self.timer)
+            #print(outputs)
+            if outputs[0] is not None:
+                #print(outputs[0].shape)
+                online_targets = self.tracker.update(outputs[0], [img_info['height'], img_info['width']], self.exp.test_size)
+                online_tlwhs = []
+                online_ids = []
+                online_scores = []
+                for t in online_targets:
+                    tlwh = t.tlwh
+                    tid = t.track_id
+                    vertical = tlwh[2] / tlwh[3] > self.args.aspect_ratio_thresh
+                    if tlwh[2] * tlwh[3] > self.args.min_box_area and not vertical:
+                        online_tlwhs.append(tlwh)
+                        online_ids.append(tid)
+                        online_scores.append(t.score)
+                    
+                self.timer.toc()
+                online_im = plot_tracking(
+                    img_info['raw_img'], online_tlwhs, online_ids, frame_id = self.frame_id + 1, fps=1. / self.timer.average_time
+                )
+            else:
+                print('no return')
+                self.timer.toc()
+                online_im = img_info['raw_img']
+            
+            self.frame_id += 1
 
 
-        return online_im       # return a modified image
+            return online_im       # return a modified image
+
+        except BaseException as err:
+            print(f"Unexpected {err=}, {type(err)=}")
+            raise
         #return pts       # return a modified pts
         #return False     # record trigger argument
 
