@@ -26,6 +26,7 @@ Reader::Reader(const char* filename)
     catch (const Exception& e) {
         std::stringstream str; str << "Reader was unable to open " << filename << " : ";
         ex.msg(e.what(), MsgPriority::CRITICAL, str.str());
+        std::exit(0);
     }
 }
 

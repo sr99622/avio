@@ -33,6 +33,7 @@ public:
 	bool full() { return m_size == m_max_size; }
 	bool empty() { return m_front == -1; }
 	bool closed() { return m_closed; }
+	void clear() { m_front = m_rear = -1; }
 	void set_max_size(int arg);
 
 private:

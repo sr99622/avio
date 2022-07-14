@@ -120,7 +120,7 @@ avio has a built in GUI for controlling the playback and recording functions.  T
 picture of the application and is termed the Heads Up Display (HUD).  The GUI will appear automatically 
 when the mouse cursor enters the screen area, and will retreat if the mouse becomes inactive or leaves 
 the screen.  It some cases, it may be desirable that the GUI is always or never present.  These effects 
-may be achieved using the --pin_hud and --disable_hud.
+may be achieved using the --pin_osd and --disable_hud.
 
 The functions performed by the GUI are available as keyboard shortcuts at all times as shown in the 
 On Screen commands.

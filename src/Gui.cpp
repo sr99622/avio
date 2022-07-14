@@ -1,4 +1,4 @@
-#include "Hud.h"
+#include "Osd.h"
 #include "Gui.h"
 #include "Display.h"
 
@@ -45,7 +45,7 @@ void ButtonRec::handleEvent(const SDL_Event& e)
 	if (hovering(e)) {
 		if (e.type == SDL_MOUSEBUTTONDOWN) {
 			if (e.button.button == SDL_BUTTON_LEFT) {
-				Display* display = (Display*)((Hud*)hud)->display;
+				Display* display = (Display*)((Osd*)osd)->display;
 				display->toggleRecord();
 			}
 		}
@@ -79,7 +79,7 @@ void ButtonPlay::handleEvent(const SDL_Event& e)
 	if (hovering(e)) {
 		if (e.type == SDL_MOUSEBUTTONDOWN) {
 			if (e.button.button == SDL_BUTTON_LEFT) {
-				Display* display = (Display*)((Hud*)hud)->display;
+				Display* display = (Display*)((Osd*)osd)->display;
 				display->togglePause();
 				//hot = !hot;
 			}
@@ -100,19 +100,20 @@ void ProgressBar::handleEvent(const SDL_Event& e)
 				if (e.button.x != last_click_x) {
 					float pct = (e.button.x - x) / (float)width;
 					last_click_x = e.button.x;
-					((Hud*)hud)->reader->request_seek(pct);
-					Display* display = (Display*)((Hud*)hud)->display;
+					Display* display = (Display*)((Osd*)osd)->display;
+					display->clearInputQueues();
 					if (display->paused && !display->vfq_in) {
 						pct_progress = pct;
 						render(display->renderer);
 					}
+					((Osd*)osd)->reader->request_seek(pct);
 				}
 			}
 		}
-		((Hud*)hud)->showMark(mark_pct);
+		((Osd*)osd)->showMark(mark_pct);
 	}
 	else {
-		((Hud*)hud)->lblMark->visible = false;
+		((Osd*)osd)->lblMark->visible = false;
 	}
 }
 

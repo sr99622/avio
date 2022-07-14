@@ -439,7 +439,7 @@ Display handles the presentation of the media.  It also hosts the python interfa
 
         :type: bool
 
-    .. py:attribute:: hud_enabled
+    .. py:attribute:: osd_enabled
 
         If set to False, the application will not show the HUD
 
@@ -474,7 +474,7 @@ Display handles the presentation of the media.  It also hosts the python interfa
 
         :type: str
 
-    .. py:method:: pin_hud(bool pinned)
+    .. py:method:: pin_osd(bool pinned)
 
         Setting with True will force the HUD to display at all times
 

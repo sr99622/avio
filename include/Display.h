@@ -13,7 +13,7 @@
 #include "Decoder.h"
 #include "Filter.h"
 #include "PyRunner.h"
-#include "Hud.h"
+#include "Osd.h"
 #include "Reader.h"
 #include "Writer.h"
 #include "Encoder.h"
@@ -44,7 +44,8 @@ public:
     PlayState getEvents(std::vector<SDL_Event>* events);
     bool display();
     bool havePython();
-    void pin_hud(bool arg);
+    void pin_osd(bool arg);
+    void clearInputQueues();
     
     bool paused = false;
     bool user_paused = false;
@@ -97,9 +98,9 @@ public:
 
     PyRunner* pyRunner = nullptr;
 
-    Hud hud;
+    Osd osd;
     std::string font_file;
-    bool hud_enabled = true;
+    bool osd_enabled = true;
 
     SDL_AudioDeviceID audioDeviceID;
     Clock rtClock;
@@ -112,7 +113,7 @@ public:
     Queue<char> sdl_buffer;
     int audio_buffer_len = 0;
     bool disable_audio = false;
-    bool fix_audio_pop = true;
+    //bool fix_audio_pop = false;
     bool ignore_video_pts = false;
     bool audio_eof = false;
 

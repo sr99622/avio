@@ -12,10 +12,10 @@ constexpr auto TIMEOUT = 2; // timeout in seconds
 namespace avio
 {
 
-class Hud
+class Osd
 {
 public:
-	Hud();
+	Osd();
 	void handleEvent(SDL_Event& e, Frame& f);
 	std::string strElapsed(int64_t elapsed) const;
 	void showMark(float pct);
@@ -23,7 +23,7 @@ public:
 	void fade(Frame& f);
 
 	bool heads_up = false;
-	bool pin_hud = false;
+	bool pin_osd = false;
 	bool highlight = false;
 	int64_t last_pts = AV_NOPTS_VALUE;
 

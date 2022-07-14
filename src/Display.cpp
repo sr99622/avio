@@ -8,16 +8,16 @@ namespace avio
 void Display::init()
 {
     try {
-        hud.reader = reader;
-        hud.writer = writer;
-        hud.display = this;
+        osd.reader = reader;
+        osd.writer = writer;
+        osd.display = this;
         
         if (!writer) {
-            hud.btnRec->visible = false;
+            osd.btnRec->visible = false;
         }
         else {
             if (writer->enabled)
-                hud.btnRec->hot = true;
+                osd.btnRec->hot = true;
         }
 
         if (font_file.empty()) {
@@ -85,7 +85,7 @@ int Display::initVideo(int width, int height, AVPixelFormat pix_fmt)
             throw Exception(str.str());
         }
 
-        hud.format = sdl_format;
+        osd.format = sdl_format;
 
         if (!SDL_WasInit(SDL_INIT_VIDEO))
             if (SDL_Init(SDL_INIT_VIDEO)) throw Exception(std::string("SDL video init error: ") + SDL_GetError());
@@ -110,15 +110,15 @@ int Display::initVideo(int width, int height, AVPixelFormat pix_fmt)
 
             int font_size = 24;
             if (width < 960) font_size = 16;
-            hud.font = TTF_OpenFont(font_file.c_str(), font_size);
-            if (!hud.font) {
+            osd.font = TTF_OpenFont(font_file.c_str(), font_size);
+            if (!osd.font) {
                 std::stringstream str;
                 str << "Attempted to find font file at " << font_file << "\n";
-                str << "ERROR: Font file for hud not found, hud has been disabled.\n";
+                str << "ERROR: Font file for osd not found, osd has been disabled.\n";
                 str << "       This error may be fixed by placing the font file at the location above\n"; 
                 str << "       or the font file location may be set manually using the font_file parameter\n";
                 std::cout << str.str() << std::endl;
-                hud_enabled = false;
+                osd_enabled = false;
             }
         }
         else {
@@ -163,8 +163,14 @@ void Display::videoPresentation()
 
     SDL_RenderClear(renderer);
     ex.ck(SDL_RenderCopy(renderer, texture, NULL, NULL), SDL_GetError());
-    hud.render(renderer);
+    osd.render(renderer);
     SDL_RenderPresent(renderer);
+}
+
+void Display::clearInputQueues()
+{
+	if (vfq_in) while (vfq_in->size() > 0) vfq_in->pop();
+	if (afq_in) while (afq_in->size() > 0) afq_in->pop();
 }
 
 PlayState Display::getEvents(std::vector<SDL_Event>* events)
@@ -203,6 +209,7 @@ PlayState Display::getEvents(std::vector<SDL_Event>* events)
                         pct = 0.0;
                     reader->request_seek(pct);
                 }
+                clearInputQueues();
             }
             else if (event.key.keysym.sym == SDLK_RIGHT && event.key.repeat == 0) {
                 if (vfq_in) {
@@ -215,6 +222,7 @@ PlayState Display::getEvents(std::vector<SDL_Event>* events)
                         reader->request_seek(pct);
                     }
                 }
+                clearInputQueues();
             }
             else if (event.key.keysym.sym == SDLK_s) {
                 if (paused) single_step = true;
@@ -251,12 +259,6 @@ bool Display::display()
 
         if (paused) 
         {
-            if (afq_in && vfq_in) {
-                while (afq_in->size() > 0) {
-                    afq_in->pop(f);
-                }
-            }
-
             if (!single_step && !reverse_step) {
                 if (reader->seeking()) {
                     paused = false;
@@ -264,7 +266,7 @@ bool Display::display()
                 else {
                     f = paused_frame;
                     if (havePython()) pyRunner->run(f, Event::pack(events));
-                    if (hud_enabled) for (SDL_Event& event : events) hud.handleEvent(event, f);
+                    if (osd_enabled) for (SDL_Event& event : events) osd.handleEvent(event, f);
                     videoPresentation();
                     SDL_Delay(SDL_EVENT_LOOP_WAIT);
                     break;
@@ -326,7 +328,7 @@ bool Display::display()
             paused_frame = f;
 
             if (Py_IsInitialized() && havePython()) {
-                if (fix_audio_pop) SDL_LockAudioDevice(audioDeviceID);
+                //if (fix_audio_pop) SDL_LockAudioDevice(audioDeviceID);
                 if (!pyRunner)
                     pyRunner = new PyRunner(pythonDir, pythonFile, pythonClass, pythonInitArg);
 
@@ -334,13 +336,12 @@ bool Display::display()
                     if (pyRunner->run(f, Event::pack(events)))
                         toggleRecord();
                 }
-
-                if (fix_audio_pop) SDL_UnlockAudioDevice(audioDeviceID);
+                //if (fix_audio_pop) SDL_UnlockAudioDevice(audioDeviceID);
             }
 
             if (f.isValid()) {
                 ex.ck(initVideo(f.m_frame->width, f.m_frame->height, (AVPixelFormat)f.m_frame->format), "initVideo");
-                if (hud_enabled) for (SDL_Event& event : events) hud.handleEvent(event, f);
+                if (osd_enabled) for (SDL_Event& event : events) osd.handleEvent(event, f);
                 if (key_record_flag) {
                     key_record_flag = false;
                     toggleRecord();
@@ -445,11 +446,7 @@ int Display::initAudio(int stream_sample_rate, AVSampleFormat stream_sample_form
 
         audioDeviceID = SDL_OpenAudioDevice(NULL, 0, &sdl, &have, 0);
         if (audioDeviceID == 0) {
-            const int count = SDL_GetNumAudioDevices(0);
-            if (count == 0) {
-                std::cout << "WARNING no audio devices found, use audio_disable to run without audio" << std::endl;
-                throw Exception(std::string("SDL_OpenAudioDevice exception: ") + SDL_GetError());
-            }
+            throw Exception(std::string("SDL_OpenAudioDevice exception: ") + SDL_GetError());
         }
 
         SDL_PauseAudioDevice(audioDeviceID, 0);
@@ -469,13 +466,10 @@ void Display::AudioCallback(void* userdata, uint8_t* audio_buffer, int len)
     memset(audio_buffer, 0, len);
     Frame f;
 
-    try {
-        if (d->paused) {
-            if (d->reader->seek_target_pts == AV_NOPTS_VALUE) {
-                return;
-            }
-        }
+    if (d->paused)
+        return;
 
+    try {
         if (d->disable_audio || d->user_paused)
             return;
 
@@ -499,7 +493,6 @@ void Display::AudioCallback(void* userdata, uint8_t* audio_buffer, int len)
                     swr_convert(d->swr_ctx, &d->swr_buffer, nb_samples, data, nb_samples);
                     for (int i = 0; i < d->swr_buffer_size; i++)
                         d->sdl_buffer.push(d->swr_buffer[i]);
-
                 }
                 else {
                     SDL_PauseAudioDevice(d->audioDeviceID, true);
@@ -538,8 +531,8 @@ void Display::togglePause()
     paused = !paused;
     rtClock.pause(paused);
     user_paused = paused;
-    hud.btnPlay->hot = paused;
-    if (SDL_WasInit(SDL_INIT_AUDIO) && fix_audio_pop) SDL_PauseAudioDevice(audioDeviceID, paused);
+    osd.btnPlay->hot = paused;
+    //if (SDL_WasInit(SDL_INIT_AUDIO) && fix_audio_pop) SDL_PauseAudioDevice(audioDeviceID, paused);
 }
 
 void Display::toggleRecord()
@@ -557,7 +550,7 @@ void Display::toggleRecord()
     }
 
     writer->enabled = recording;
-    hud.btnRec->hot = recording;
+    osd.btnRec->hot = recording;
 }
 
 bool Display::havePython()
@@ -568,9 +561,9 @@ bool Display::havePython()
         return true;
 }
 
-void Display::pin_hud(bool arg)
+void Display::pin_osd(bool arg)
 {
-    hud.pin_hud = arg;
+    osd.pin_osd = arg;
 }
 
 std::string Display::audioDeviceStatus() const

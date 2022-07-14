@@ -17,7 +17,7 @@ public:
 class Widget
 {
 public:
-	Widget(void* hud) : hud(hud)
+	Widget(void* osd) : osd(osd)
 	{
 		border = Border(4, 4, 4, 4);
 	}
@@ -42,7 +42,7 @@ public:
 		return hover;
 	}
 
-	void* hud;
+	void* osd;
 
 	SDL_Color color_lo = { 178, 178, 178 };
 	SDL_Color color_hi = { 255, 255, 255 };

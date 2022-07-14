@@ -1,11 +1,11 @@
-#include "Hud.h"
+#include "Osd.h"
 #include "Display.h"
 #include <ctime>
 
 namespace avio
 {
 
-Hud::Hud()
+Osd::Osd()
 {
     timeout_start = time(nullptr);
     bar = new ProgressBar(this);
@@ -20,7 +20,7 @@ Hud::Hud()
     widgets.push_back(btnPlay);
 }
 
-std::string Hud::strElapsed(int64_t elapsed) const
+std::string Osd::strElapsed(int64_t elapsed) const
 {
     int seconds = (int)(elapsed / (float)1000) % 60;
     int minutes = (int)(elapsed / (float)60000) % 60;
@@ -34,7 +34,7 @@ std::string Hud::strElapsed(int64_t elapsed) const
     return str.str();
 }
 
-void Hud::showMark(float pct) 
+void Osd::showMark(float pct) 
 {
     lblMark->visible = true;
     lblMark->font = font;
@@ -44,15 +44,15 @@ void Hud::showMark(float pct)
     lblMark->y = bar->y - bar->height - text_size.y + 8;
 }
 
-void Hud::render(SDL_Renderer* renderer)
+void Osd::render(SDL_Renderer* renderer)
 {
-    if (heads_up || pin_hud) {
+    if (heads_up || pin_osd) {
         for (Widget* widget : widgets)
             widget->render(renderer);
     }
 }
 
-void Hud::fade(Frame& f)
+void Osd::fade(Frame& f)
 {
     if (f.m_faded) return;
 
@@ -73,7 +73,7 @@ void Hud::fade(Frame& f)
     f.m_faded = true;
 }
 
-void Hud::handleEvent(SDL_Event& e, Frame& f) 
+void Osd::handleEvent(SDL_Event& e, Frame& f) 
 {
     if (!f.isValid())
         return;
@@ -91,7 +91,7 @@ void Hud::handleEvent(SDL_Event& e, Frame& f)
         }
     }
 
-    if (heads_up || pin_hud) {
+    if (heads_up || pin_osd) {
 
         if (!font) 
             return;

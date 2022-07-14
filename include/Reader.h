@@ -74,6 +74,8 @@ public:
 	void set_video_out(const std::string& name) { vpq_name = std::string(name); }
 	void set_audio_out(const std::string& name) { apq_name = std::string(name); }
 
+	void *display;
+
 	ExceptionHandler ex;
 };
 

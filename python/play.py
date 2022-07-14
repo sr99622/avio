@@ -27,9 +27,9 @@ class Player:
         if args.no_audio:
             show_audio = False
 
-        pin_hud = False
-        if args.pin_hud:
-            pin_hud = True
+        pin_osd = False
+        if args.pin_osd:
+            pin_osd = True
 
         disable_hud = False
         if args.disable_hud:
@@ -66,6 +66,10 @@ class Player:
         retinanet = False
         if args.retinanet:
             retinanet = True
+
+        bytetrack = False
+        if args.bytetrack:
+            bytetrack = True
 
         yolov5 = ""
         if args.yolov5:
@@ -107,10 +111,10 @@ class Player:
         #reader.show_video_pkts = True
 
         display = avio.Display(reader)
-        if pin_hud:
-            display.pin_hud(True)
+        if pin_osd:
+            display.pin_osd(True)
         if disable_hud:
-            display.hud_enabled = False
+            display.osd_enabled = False
         display.ignore_video_pts = ignore_video_pts
         display.prepend_recent_write = True
         #display.font_file = "/home/stephen/source/avio/avio/Roboto-Regular.ttf"
@@ -119,8 +123,8 @@ class Player:
 
         if reader.has_video() and show_video:
             reader.set_video_out("vpq_reader")
-            if filename == "pipe:":
-                reader.vpq_max_size = 100
+            #if filename == "pipe:":
+            reader.vpq_max_size = 100
             if hw_decode:
                 videoDecoder = avio.Decoder(reader, avio.AVMEDIA_TYPE_VIDEO, avio.AV_HWDEVICE_TYPE_CUDA)
             else:
@@ -136,8 +140,8 @@ class Player:
 
         if reader.has_audio() and show_audio:
             reader.set_audio_out("apq_reader")
-            if filename == "pipe:":
-                reader.apq_max_size = 100
+            #if filename == "pipe:":
+            reader.apq_max_size = 100
             audioDecoder = avio.Decoder(reader, avio.AVMEDIA_TYPE_AUDIO)
             audioDecoder.set_audio_in(reader.audio_out())
             audioDecoder.set_audio_out("afq_decoder")
@@ -145,7 +149,7 @@ class Player:
             audioFilter.set_audio_in(audioDecoder.audio_out())
             audioFilter.set_audio_out("afq_filter")
             display.set_audio_in(audioFilter.audio_out())
-            display.audio_playback_format = avio.AV_SAMPLE_FMT_U8
+            display.audio_playback_format = avio.AV_SAMPLE_FMT_FLT
             process.add_decoder(audioDecoder)
             process.add_filter(audioFilter)
 
@@ -224,6 +228,8 @@ class Player:
             process.set_python(display, "./segment/interface.py", "Segment")
         if retinanet:
             process.set_python(display, "./retinanet.py", "RetinaNet")
+        if bytetrack:
+            process.set_python(display, "./bytetrack/interface.py", "ByteTrack")
             
         process.add_display(display)
         process.run()
@@ -236,7 +242,7 @@ if __name__ == "__main__":
     parser.add_argument("--afilter", type=ascii)
     parser.add_argument("--no_video", help="no video", action="store_true")
     parser.add_argument("--no_audio", help="no audio", action="store_true")
-    parser.add_argument("--pin_hud", help="pin_hud", action="store_true")
+    parser.add_argument("--pin_osd", help="pin_osd", action="store_true")
     parser.add_argument("--disable_hud", help="disable_hud", action="store_true")
     parser.add_argument("--hw_decode", help="hw_decode", action="store_true")
     parser.add_argument("--encode", help="encode", action="store_true")
@@ -253,6 +259,7 @@ if __name__ == "__main__":
     parser.add_argument("--mobilenet", type=ascii, help="model_name=C:/Users/sr996/Downloads/ssd_mobilenet_v2_320x320_coco17_tpu-8/saved_model;gpu_mem_limit=4096")
     parser.add_argument("--retinanet", help="RetinaNet", action="store_true")
     parser.add_argument("--segment", help="semantic segmentation", action="store_true")
+    parser.add_argument("--bytetrack", help="ByteTrack", action="store_true")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int)
     parser.add_argument("--end_at", type=int)

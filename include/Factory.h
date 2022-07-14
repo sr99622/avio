@@ -39,6 +39,8 @@ static void read(Reader* reader, Queue<AVPacket*>* vpq, Queue<AVPacket*>* apq)
                 if (!pkt) {
                     break;
                 }
+                if (vpq) while(vpq->size() > 0) vpq->pop();
+                if (apq) while(apq->size() > 0) apq->pop();
             }
 
             if (reader->stop_play_at_pts != AV_NOPTS_VALUE && pkt->stream_index == reader->seek_stream_index()) {

@@ -176,7 +176,7 @@ pybind11_add_module(avio
                         src/Filter.cpp
                         src/Clock.cpp
                         src/Display.cpp
-                        src/Hud.cpp
+                        src/Osd.cpp
                         src/Gui.cpp
                         src/Encoder.cpp
                         src/Writer.cpp
