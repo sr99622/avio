@@ -27,7 +27,6 @@ requirements:
     - pip
     - numpy
     - ffmpeg
-    - ffmpeg
     - sdl2_ttf
 
   run:
