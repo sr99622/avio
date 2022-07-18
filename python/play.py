@@ -117,7 +117,7 @@ class Player:
             display.osd_enabled = False
         display.ignore_video_pts = ignore_video_pts
         display.prepend_recent_write = True
-        #display.font_file = "/home/stephen/source/avio/avio/Roboto-Regular.ttf"
+        #display.font_file = "/usr/share/fonts/liberation-serif/LiberationSerif-Bold.ttf"
         process = avio.Process()
         process.add_reader(reader)
 

@@ -15,28 +15,26 @@ requirements:
   build:
     - "{{ compiler('cxx') }}"  #[win]
     - "{{ compiler('gcc') }}"  #[unix]
-    - python==3.9
+    - python
     - cmake
     - ninja
-    - numpy==1.23.0
-    - ffmpeg==4.4.2 #[win]
-    - ffmpeg==5.0.1 #[unix]
-    - SDL2_ttf==2.0.15
+    - numpy
+    - ffmpeg
+    - sdl2_ttf
 
   host:
-    - python==3.9
+    - python
     - pip
-    - numpy==1.23.0
-    - ffmpeg==4.4.2 #[win]
-    - ffmpeg==5.0.1 #[unix]
-    - SDL2_ttf==2.0.15
+    - numpy
+    - ffmpeg
+    - ffmpeg
+    - sdl2_ttf
 
   run:
-    - python==3.9
-    - numpy==1.23.0
-    - ffmpeg==4.4.2 #[win]
-    - ffmpeg==5.0.1 #[unix]
-    - SDL2_ttf==2.0.15
+    - python
+    - numpy
+    - ffmpeg
+    - sdl2_ttf
 
 test:
   requires:

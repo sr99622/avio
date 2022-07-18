@@ -17,6 +17,7 @@ from yolox.tracking_utils.timer import Timer
 
 from torchvision.transforms import functional
 
+#'''
 class Predictor(object):
     def __init__(
         self,
@@ -24,7 +25,7 @@ class Predictor(object):
         exp,
         trt_file=None,
         decoder=None,
-        device=torch.device("cpu"),
+        device=torch.device("cuda"),
         fp16=False
     ):
         self.model = model
@@ -89,7 +90,7 @@ class Predictor(object):
 
         #timer.toc()
         return outputs, img_info
-
+#'''
 
 class Argument:
     track_thresh = 0.5
@@ -98,18 +99,20 @@ class Argument:
     match_thresh = 0.8
     aspect_ratio_thresh = 1.6
     min_box_area = 10.0
-    #ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
-    ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    #ckpt = "/home/stephen/Downloads/yolox_l.pth"
+    #ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
     trt = False
     fp16 = True
-    #trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
-    trt_file = "C:/users/sr996/source/repos/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
+    trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
+    #trt_file = "C:/users/sr996/source/repos/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
 
 class ByteTrack:
     def __init__(self):
-        try :
-            print("bytetrack.__init__")
+        print("ByteTrack.__init__")
 
+        #'''
+        try :
             self.args = Argument()
             print(self.args.mot20)
             self.exp = get_exp("yolox_l_mix_det.py", None)
@@ -126,10 +129,10 @@ class ByteTrack:
                 trt_file = self.args.trt_file
             else:
                 ckpt_file = self.args.ckpt
-                logger.info("loading checkpoint")
+                logger.info("loading checkpoint: {}", ckpt_file)
                 ckpt = torch.load(ckpt_file, map_location="cpu")
                 model.load_state_dict(ckpt["model"])
-                logger.info("Loaded checkpoint done")
+                logger.info("Loaded checkpoint success")
                 decoder = None
                 trt_file = None
 
@@ -142,10 +145,15 @@ class ByteTrack:
             self.frame_id = 0
             print("init complete")
         except BaseException as err:
-            print(f"Unexpected {err=}, {type(err)=}")
+            #print(f"Unexpected {err=}, {type(err)=}")
+            logger.exception("ByteTrack initialization failure")
             raise
+        #'''
 
     def __call__(self, arg):
+        #print("ByteTrack.__call__")
+
+        #'''
         try :
             self.timer.tic()
 
@@ -185,8 +193,11 @@ class ByteTrack:
             return online_im       # return a modified image
 
         except BaseException as err:
-            print(f"Unexpected {err=}, {type(err)=}")
+            #print(f"Unexpected {err=}, {type(err)=}")
+            logger.exception("ByteTrack runtime error")
             raise
+        #'''
+
         #return pts       # return a modified pts
         #return False     # record trigger argument
 
