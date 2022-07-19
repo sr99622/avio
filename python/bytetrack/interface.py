@@ -119,7 +119,7 @@ class ByteTrack:
             print("exp.name", self.exp.exp_name)
             device = torch.device("cuda")
             model = self.exp.get_model().to(device)
-            logger.info("Model Summary: {}".format(get_model_info(model, self.exp.test_size)))
+            #logger.info("Model Summary: {}".format(get_model_info(model, self.exp.test_size)))
             model.eval()
 
             if self.args.trt: 

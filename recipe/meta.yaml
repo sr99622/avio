@@ -1,7 +1,8 @@
+{% set name = "avio" %}
 {% set version = "1.0.0" %}
 
 package:
-  name: avio
+  name: {{ name }}
   version: {{ version }}
 
 source:
@@ -18,21 +19,18 @@ requirements:
     - python
     - cmake
     - ninja
-    - numpy
-    - ffmpeg
+    - opencv
     - sdl2_ttf
 
   host:
     - python
     - pip
-    - numpy
-    - ffmpeg
+    - opencv
     - sdl2_ttf
 
   run:
     - python
-    - numpy
-    - ffmpeg
+    - opencv
     - sdl2_ttf
 
 test:
