@@ -99,13 +99,14 @@ class Argument:
     match_thresh = 0.8
     aspect_ratio_thresh = 1.6
     min_box_area = 10.0
-    ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    #ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
     #ckpt = "/home/stephen/Downloads/yolox_l.pth"
-    #ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
-    trt = False
-    fp16 = True
-    trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
+    ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    trt = True
+    fp16 = False
+    #trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
     #trt_file = "C:/users/sr996/source/repos/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
+    trt_file = "C:/Users/sr996/source/pretrained/bytetrack_l_mot17_trt.pth"
 
 class ByteTrack:
     def __init__(self):

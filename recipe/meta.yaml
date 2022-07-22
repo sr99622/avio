@@ -19,18 +19,24 @@ requirements:
     - python
     - cmake
     - ninja
-    - opencv
+    - ffmpeg  #[win]
+    - numpy   #[win]
+    - opencv  #[linux]
     - sdl2_ttf
 
   host:
     - python
     - pip
-    - opencv
+    - ffmpeg  #[win]
+    - numpy   #[win]
+    - opencv  #[linux]
     - sdl2_ttf
 
   run:
     - python
-    - opencv
+    - ffmpeg  #[win]
+    - numpy   #[win]
+    - opencv  #[linux]
     - sdl2_ttf
 
 test:
