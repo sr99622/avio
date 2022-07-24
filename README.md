@@ -97,6 +97,9 @@ copy include\* %CONDA_PREFIX%\Library\include
 set CUDA_HOME=%CONDA_PREFIX%
 cd python
 pip install tensorrt-8.4.1.5-cpXX-none-win_amd64.whl  #(XX is your conda environment python version, should be 39)
+git clone https://github.com/NVIDIA-AI-IOT/torch2trt.git
+cd torch2trt
+pip install .
 ```
 
 You now need to create the TensorRT version of the model for your specific GPU
