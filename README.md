@@ -89,14 +89,14 @@ Go to https://developer.nvidia.com/tensorrt and download the zip file using your
 NVIDIA credentials.  Unzip the file in a local directory.
 
 ```bash
-cd TensorRT-x.x.x.x.Windows.......   (the unzipped directory)
-cd TensorRT-x.x.x.x                  (the content directory e.g. TensorRT-8.4.1.5)
+cd TensorRT-x.x.x.x.Windows.......   #(the unzipped directory)
+cd TensorRT-x.x.x.x                  #(the content directory e.g. TensorRT-8.4.1.5)
 copy lib\*.dll %CONDA_PREFIX%\Library\bin
 copy lib\*.lib %CONDA_PREFIX%\Library\lib
 copy include\* %CONDA_PREFIX%\Library\include
 set CUDA_HOME=%CONDA_PREFIX%
 cd ..\python
-pip install tensorrt-8.4.1.5-cpXX-none-win_amd64.whl  (XX is your conda environment python version, should be 39)
+pip install tensorrt-8.4.1.5-cpXX-none-win_amd64.whl  #(XX is your conda environment python version, should be 39)
 ```
 
 You now need to create the TensorRT version of the model for your specific GPU
