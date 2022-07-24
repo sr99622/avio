@@ -77,6 +77,7 @@ On Linux:
 ```bash
 pip install nvidia-pyindex
 pip install nvidia-tensorrt
+export CUDA_HOME=$CONDA_PREFIX
 git clone https://github.com/NVIDIA-AI-IOT/torch2trt.git
 cd torch2trt
 pip install .
