@@ -53,7 +53,7 @@ git clone --recursive https://github.com/sr99622/avio.git
 Run the sample test program
 
 ```bash
-cd avio\python
+cd avio/python
 python test.py
 ```
 
