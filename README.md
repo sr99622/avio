@@ -58,7 +58,7 @@ python test.py
 ```
 
 The ByteTrack and YOLOX module can be added for detection and tracking.  It is 
-suggested to use mambe to speed up this install
+suggested to use mamba to speed up this install
 
 ```bash
 conda install mamba
