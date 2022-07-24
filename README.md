@@ -95,7 +95,7 @@ copy lib\*.dll %CONDA_PREFIX%\Library\bin
 copy lib\*.lib %CONDA_PREFIX%\Library\lib
 copy include\* %CONDA_PREFIX%\Library\include
 set CUDA_HOME=%CONDA_PREFIX%
-cd ..\python
+cd python
 pip install tensorrt-8.4.1.5-cpXX-none-win_amd64.whl  #(XX is your conda environment python version, should be 39)
 ```
 
