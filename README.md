@@ -83,6 +83,7 @@ pip install .
 ```
 
 On Windows:
+
 Go to https://developer.nvidia.com/tensorrt and download the zip file using your
 NVIDIA credentials.  Unzip the file in a local directory.
 
