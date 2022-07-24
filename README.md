@@ -66,7 +66,7 @@ mamba install -c sr99622 -c pytorch yolox
 ```
 
 You can get the pretrained model (bytetrack_l_mot17.pth.tar) for this at 
-https://drive.google.com/file/d/1XwfUuCBF4IgWBWK2H7oOhQgEj9Mrb3rz/view?usp=sharing
+[[bytetrack_l_mot17]](https://drive.google.com/file/d/1XwfUuCBF4IgWBWK2H7oOhQgEj9Mrb3rz/view?usp=sharing)
 You will need to adjust the code in avio\python\bytetrack\interface.py to point to 
 the location of the model on the local machine.
 
