@@ -78,7 +78,7 @@ On Linux:
 pip install nvidia-pyindex
 pip install nvidia-tensorrt
 git clone https://github.com/NVIDIA-AI-IOT/torch2trt.git
-cd torc2trt
+cd torch2trt
 pip install .
 ```
 
