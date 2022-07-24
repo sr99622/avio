@@ -78,6 +78,7 @@ On Linux:
 pip install nvidia-pyindex
 pip install nvidia-tensorrt
 export CUDA_HOME=$CONDA_PREFIX
+mamba install cudnn
 git clone https://github.com/NVIDIA-AI-IOT/torch2trt.git
 cd torch2trt
 pip install .
@@ -97,6 +98,7 @@ copy include\* %CONDA_PREFIX%\Library\include
 set CUDA_HOME=%CONDA_PREFIX%
 cd python
 pip install tensorrt-8.4.1.5-cpXX-none-win_amd64.whl  #(XX is your conda environment python version, should be 39)
+mamba install cudnn
 git clone https://github.com/NVIDIA-AI-IOT/torch2trt.git
 cd torch2trt
 pip install .
