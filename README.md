@@ -37,7 +37,7 @@ conda config --add channels conda-forge
 
 Using the anaconda prompt, create a new conda environment with avio and activate it, 
 as shown below.  Windows users may consult this link for further reference
-https://docs.anaconda.com/anaconda/user-guide/getting-started/#open-anaconda-prompt
+[[Anaconda prompt on Windows]](https://docs.anaconda.com/anaconda/user-guide/getting-started/#open-anaconda-prompt)
 
 ```bash
 conda create --name test -c sr99622 avio
