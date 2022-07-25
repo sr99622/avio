@@ -23,22 +23,11 @@ possible, harnessing the power of the GPU to improve perfomance during read and 
 Most common formats are easily configured, allowing the devloper to present data to a wider
 audience.
 
-Windows Quick Start
+Installation Quick Start
 -------------------
 
-The following instructions are for windows users.  
-
 Anaconda should be installed on the host machine.  The download is available at
-https://www.anaconda.com/products/distribution#windows.
-
-Using the anaconda prompt, as shown in this link 
-https://docs.anaconda.com/anaconda/user-guide/getting-started/#open-anaconda-prompt
-create a new conda environment and activate it, as shown below.
-
-```bash
-conda create --name test
-conda activate test
-```
+https://www.anaconda.com/products/distribution
 
 Add the conda forge channel to the conda configuration
 
@@ -46,10 +35,13 @@ Add the conda forge channel to the conda configuration
 conda config --add channels conda-forge
 ```
 
-Install avio
+Using the anaconda prompt, create a new conda environment with avio and activate it, 
+as shown below.  Windows users may consult this link for further reference
+https://docs.anaconda.com/anaconda/user-guide/getting-started/#open-anaconda-prompt
 
 ```bash
-conda install -c sr99622 avio
+conda create --name test -c sr99622 avio
+conda activate test
 ```
 
 Download the source code and example programs
@@ -64,3 +56,57 @@ Run the sample test program
 cd avio\python
 python test.py
 ```
+
+The ByteTrack and YOLOX module can be added for detection and tracking.  It is 
+suggested to use mambe to speed up this install
+
+```bash
+conda install mamba
+mamba install -c sr99622 -c pytorch yolox
+```
+
+You can get the pretrained model (bytetrack_l_mot17.pth.tar) for this at 
+https://drive.google.com/file/d/1XwfUuCBF4IgWBWK2H7oOhQgEj9Mrb3rz/view?usp=sharing
+You will need to adjust the code in avio\python\bytetrack\interface.py to point to 
+the location of the model on the local machine.
+
+The model runtime can be improved dramatically using TensorRT.  To install TensorRT
+
+On Linux:
+
+```bash
+pip install nvidia-pyindex
+pip install nvidia-tensorrt
+git clone https://github.com/NVIDIA-AI-IOT/torch2trt.git
+cd torc2trt
+pip install .
+```
+
+On Windows:
+Go to https://developer.nvidia.com/tensorrt and download the zip file using your
+NVIDIA credentials.  Unzip the file in a local directory.
+
+```bash
+cd TensorRT-x.x.x.x.Windows.......   (the unzipped directory)
+cd TensorRT-x.x.x.x                  (the content directory e.g. TensorRT-8.4.1.5)
+copy lib\*.dll %CONDA_PREFIX%\Library\bin
+copy lib\*.lib %CONDA_PREFIX%\Library\lib
+copy include\* %CONDA_PREFIX%\Library\include
+set CUDA_HOME=%CONDA_PREFIX%
+cd ..\python
+pip install tensorrt-8.4.1.5-cpXX-none-win_amd64.whl  (XX is your conda environment python version, should be 39)
+```
+
+You now need to create the TensorRT version of the model for your specific GPU
+
+```bash
+cd to your avio installation directory
+cd avio/python
+python bytetrack/trt.py -f bytetrack/yolox_l_mix_det.py -c /path/to/model/bytetrack_l_mot17.pth.tar
+```
+
+The TensorRT version of the model will be installed adjacent to the torch version
+/path/to/model/bytetrack_l_mot17_trt.pth
+
+You will need to adjust the parameter in the avio/python/bytetrack/interface.py file to match your local
+configuration.
