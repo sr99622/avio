@@ -19,24 +19,21 @@ requirements:
     - python
     - cmake
     - ninja
-    - ffmpeg  #[win]
-    - numpy   #[win]
-    - opencv  #[linux]
+    - ffmpeg
+    - numpy
     - sdl2_ttf
 
   host:
     - python
     - pip
-    - ffmpeg  #[win]
-    - numpy   #[win]
-    - opencv  #[linux]
+    - ffmpeg 
+    - numpy
     - sdl2_ttf
 
   run:
     - python
-    - ffmpeg  #[win]
-    - numpy   #[win]
-    - opencv  #[linux]
+    - ffmpeg 
+    - numpy
     - sdl2_ttf
 
 test:
@@ -52,3 +49,4 @@ test:
 about:
   summary: A python media processing module
   license_file: LICENSE
+conda 

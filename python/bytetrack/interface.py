@@ -99,19 +99,44 @@ class Argument:
     match_thresh = 0.8
     aspect_ratio_thresh = 1.6
     min_box_area = 10.0
-    #ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
     #ckpt = "/home/stephen/Downloads/yolox_l.pth"
     #ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
-    ckpt = "C:/users/stephen/source/pretrained/bytetrack_l_mot17.pth.tar"
-    trt = True
-    fp16 = False
-    #trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
+    #ckpt = "C:/users/stephen/source/pretrained/bytetrack_l_mot17.pth.tar"
+    trt = False
+    fp16 = True
+    trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
     #trt_file = "C:/users/sr996/source/repos/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
-    trt_file = "C:/Users/stephen/source/pretrained/bytetrack_l_mot17_trt.pth"
+    #trt_file = "C:/Users/stephen/source/pretrained/bytetrack_l_mot17_trt.pth"
 
 class ByteTrack:
-    def __init__(self):
+    def __init__(self, arg):
         print("ByteTrack.__init__")
+
+        ckpt_file = None
+        fp16 = False
+        trt_file = None
+        trt = False
+
+
+        unpacked_args = arg[0].split(";")
+        for line in unpacked_args:
+            key_value = line.split("=")
+            print("key  ", key_value[0])
+            print("value", key_value[1])
+            if key_value[0] == "ckpt":
+                ckpt_file = key_value[1]
+            if key_value[0] == "fp16":
+                fp16 = key_value[1].lower() == "true"
+            if key_value[0] == "trt_file":
+                trt_file = key_value[1]
+                trt = True
+
+        print("class ByteTrack initialized with the values from command line")
+        print("ckpt", ckpt_file)
+        print("trt_file", trt_file)
+        print("trt", trt)
+        print("fp16", fp16)
 
         #'''
         try :
@@ -124,13 +149,13 @@ class ByteTrack:
             #logger.info("Model Summary: {}".format(get_model_info(model, self.exp.test_size)))
             model.eval()
 
-            if self.args.trt: 
-                print("loading TensorRT model: ", self.args.trt_file)
+            if trt: 
+                print("loading TensorRT model: ", trt_file)
                 model.head.decode_in_inference = False
                 decoder = model.head.decode_outputs
-                trt_file = self.args.trt_file
+                #trt_file = self.args.trt_file
             else:
-                ckpt_file = self.args.ckpt
+                #ckpt_file = self.args.ckpt
                 logger.info("loading checkpoint: {}", ckpt_file)
                 ckpt = torch.load(ckpt_file, map_location="cpu")
                 model.load_state_dict(ckpt["model"])
@@ -138,10 +163,10 @@ class ByteTrack:
                 decoder = None
                 trt_file = None
 
-                if self.args.fp16:
+                if fp16:
                     model = model.half()
 
-            self.predictor = Predictor(model, self.exp, trt_file, decoder, device, self.args.fp16)
+            self.predictor = Predictor(model, self.exp, trt_file, decoder, device, fp16)
             self.tracker = BYTETracker(self.args)
             self.timer = Timer()
             self.frame_id = 0

@@ -69,7 +69,7 @@ class Player:
 
         bytetrack = False
         if args.bytetrack:
-            bytetrack = True
+            bytetrack = eval(args.bytetrack)
 
         yolov5 = ""
         if args.yolov5:
@@ -230,6 +230,7 @@ class Player:
             process.set_python(display, "./retinanet.py", "RetinaNet")
         if bytetrack:
             process.set_python(display, "./bytetrack/interface.py", "ByteTrack")
+            process.set_python_init_arg(display, bytetrack)
             
         process.add_display(display)
         process.run()
@@ -259,7 +260,7 @@ if __name__ == "__main__":
     parser.add_argument("--mobilenet", type=ascii, help="model_name=C:/Users/sr996/Downloads/ssd_mobilenet_v2_320x320_coco17_tpu-8/saved_model;gpu_mem_limit=4096")
     parser.add_argument("--retinanet", help="RetinaNet", action="store_true")
     parser.add_argument("--segment", help="semantic segmentation", action="store_true")
-    parser.add_argument("--bytetrack", help="ByteTrack", action="store_true")
+    parser.add_argument("--bytetrack", type=ascii, help="trt=False;fp16=False;ckpt=bytetrack_l_mot17.pth.tar;trt_file=bytetrack_l_mot17_trt.pth")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int)
     parser.add_argument("--end_at", type=int)
