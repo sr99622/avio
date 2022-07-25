@@ -101,12 +101,13 @@ class Argument:
     min_box_area = 10.0
     #ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
     #ckpt = "/home/stephen/Downloads/yolox_l.pth"
-    ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    #ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
+    ckpt = "C:/users/stephen/source/pretrained/bytetrack_l_mot17.pth.tar"
     trt = True
     fp16 = False
     #trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
     #trt_file = "C:/users/sr996/source/repos/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
-    trt_file = "C:/Users/sr996/source/pretrained/bytetrack_l_mot17_trt.pth"
+    trt_file = "C:/Users/stephen/source/pretrained/bytetrack_l_mot17_trt.pth"
 
 class ByteTrack:
     def __init__(self):

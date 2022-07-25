@@ -148,8 +148,6 @@ bool PyRunner::run(Frame& f, const std::string& events)
 						int depth = np_sizes[2];
 						int stride = np_strides[0];
 
-						int buf_size = height * width * depth;
-						uint8_t* buffer = new uint8_t[buf_size];
 						uint8_t* np_buf = (uint8_t*)PyArray_BYTES((PyArrayObject*)pImgRet);
 
 						if (f.m_frame->width != width || f.m_frame->height != height) {
