@@ -79,7 +79,7 @@ python play.py test.mp4 --vfilter format=bgr24 --bytetrack "ckpt_file=auto"
 
 The ckpt_file=auto directive will tell the program to download the medium version
 of the bytetrack model and use that to implement tracking.  Other sizes and 
-variations of the bytetrack model are available from the [ByteTrack homepage] https://github.com/ifzhang/ByteTrack#model-zoo
+variations of the bytetrack model are available from the [ByteTrack homepage] (https://github.com/ifzhang/ByteTrack#model-zoo)
 
 These models can be downloaded and placed on the local machine.  The ckpt_file=
 directive can be used to tell the program where to find the model.  Note that 
