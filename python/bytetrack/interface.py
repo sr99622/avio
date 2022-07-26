@@ -17,7 +17,6 @@ from yolox.tracking_utils.timer import Timer
 
 from torchvision.transforms import functional
 
-#'''
 class Predictor(object):
     def __init__(
         self,
@@ -47,10 +46,8 @@ class Predictor(object):
             self.model = model_trt
         self.rgb_means = (0.485, 0.456, 0.406)
         self.std = (0.229, 0.224, 0.225)
-        #self.timer = Timer()
 
     def inference(self, img, timer):
-        #timer.tic()
         img_info = {"id": 0}
         if isinstance(img, str):
             img_info["file_name"] = osp.basename(img)
@@ -86,11 +83,8 @@ class Predictor(object):
             outputs = postprocess(
                 outputs, self.num_classes, self.confthre, self.nmsthre
             )
-            #logger.info("Infer time: {:.4f}s".format(time.time() - t0))
 
-        #timer.toc()
         return outputs, img_info
-#'''
 
 class Argument:
     track_thresh = 0.5
@@ -99,15 +93,6 @@ class Argument:
     match_thresh = 0.8
     aspect_ratio_thresh = 1.6
     min_box_area = 10.0
-    ckpt = "/home/stephen/source/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
-    #ckpt = "/home/stephen/Downloads/yolox_l.pth"
-    #ckpt = "C:/users/sr996/source/repos/ByteTrack/pretrained/bytetrack_l_mot17.pth.tar"
-    #ckpt = "C:/users/stephen/source/pretrained/bytetrack_l_mot17.pth.tar"
-    trt = False
-    fp16 = True
-    trt_file = "/home/stephen/source/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
-    #trt_file = "C:/users/sr996/source/repos/ByteTrack/YOLOX_outputs/yolox_l_mix_det/model_trt.pth"
-    #trt_file = "C:/Users/stephen/source/pretrained/bytetrack_l_mot17_trt.pth"
 
 class ByteTrack:
     def __init__(self, arg):
@@ -124,7 +109,7 @@ class ByteTrack:
             key_value = line.split("=")
             print("key  ", key_value[0])
             print("value", key_value[1])
-            if key_value[0] == "ckpt":
+            if key_value[0] == "ckpt_file":
                 ckpt_file = key_value[1]
             if key_value[0] == "fp16":
                 fp16 = key_value[1].lower() == "true"
@@ -138,24 +123,33 @@ class ByteTrack:
         print("trt", trt)
         print("fp16", fp16)
 
-        #'''
         try :
             self.args = Argument()
             print(self.args.mot20)
-            self.exp = get_exp("yolox_l_mix_det.py", None)
+
+            if trt_file is not None:
+                if "_l_" in trt_file:
+                    self.exp = get_exp("yolox_l_mix_det.py", None)
+                else:
+                    if "_m_" in trt_file:
+                        self.exp = get_exp("yolox_m_mix_det.py", None)
+            if ckpt_file is not None:
+                if "_l_" in ckpt_file:
+                    self.exp = get_exp("yolox_l_mix_det.py", None)
+                else:
+                    if "_m_" in ckpt_file:
+                        self.exp = get_exp("yolox_m_mix_det.py", None)
+            
             print("exp.name", self.exp.exp_name)
             device = torch.device("cuda")
             model = self.exp.get_model().to(device)
-            #logger.info("Model Summary: {}".format(get_model_info(model, self.exp.test_size)))
             model.eval()
 
             if trt: 
                 print("loading TensorRT model: ", trt_file)
                 model.head.decode_in_inference = False
                 decoder = model.head.decode_outputs
-                #trt_file = self.args.trt_file
             else:
-                #ckpt_file = self.args.ckpt
                 logger.info("loading checkpoint: {}", ckpt_file)
                 ckpt = torch.load(ckpt_file, map_location="cpu")
                 model.load_state_dict(ckpt["model"])
@@ -172,26 +166,19 @@ class ByteTrack:
             self.frame_id = 0
             print("init complete")
         except BaseException as err:
-            #print(f"Unexpected {err=}, {type(err)=}")
             logger.exception("ByteTrack initialization failure")
             raise
         #'''
 
     def __call__(self, arg):
-        #print("ByteTrack.__call__")
 
-        #'''
         try :
             self.timer.tic()
 
             img = arg[0][0]
             rts = arg[2][0]
-            #print(rts)
-            #print("image shape", img.shape)
             outputs, img_info = self.predictor.inference(img, self.timer)
-            #print(outputs)
             if outputs[0] is not None:
-                #print(outputs[0].shape)
                 online_targets = self.tracker.update(outputs[0], [img_info['height'], img_info['width']], self.exp.test_size)
                 online_tlwhs = []
                 online_ids = []
@@ -217,17 +204,8 @@ class ByteTrack:
             self.frame_id += 1
 
 
-            return online_im       # return a modified image
+            return online_im       # modified image
 
         except BaseException as err:
-            #print(f"Unexpected {err=}, {type(err)=}")
             logger.exception("ByteTrack runtime error")
             raise
-        #'''
-
-        #return pts       # return a modified pts
-        #return False     # record trigger argument
-
-        #return (img, pts, False)
-        #return (img, pts)
-        #return (img, False)
