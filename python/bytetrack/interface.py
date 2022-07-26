@@ -1,10 +1,9 @@
-import argparse
-import os
 import os.path as osp
-import time
 import cv2
 import torch
-import numpy as np
+import os
+from pathlib import Path
+from sys import platform
 
 from loguru import logger
 
@@ -122,6 +121,23 @@ class ByteTrack:
         print("trt_file", trt_file)
         print("trt", trt)
         print("fp16", fp16)
+
+        if ckpt_file.lower() == "auto":
+            filename = None
+            print("platform:", platform)
+            if platform == "win32":
+                filename = os.environ['HOMEPATH'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
+            elif platform == "linux":
+                filename = os.environ['HOME'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
+
+            cache = Path(filename)
+
+            if cache.is_file():
+                print("YES")
+            else:
+                torch.hub.download_url_to_file("https://sourceforge.net/projects/avio/files/bytetrack_m_mot17.pth.tar/download", filename)
+            
+            ckpt_file = filename
 
         try :
             self.args = Argument()
