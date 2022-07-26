@@ -102,7 +102,6 @@ class ByteTrack:
         trt_file = None
         trt = False
 
-
         unpacked_args = arg[0].split(";")
         for line in unpacked_args:
             key_value = line.split("=")
@@ -122,22 +121,24 @@ class ByteTrack:
         print("trt", trt)
         print("fp16", fp16)
 
-        if ckpt_file.lower() == "auto":
-            filename = None
-            print("platform:", platform)
-            if platform == "win32":
-                filename = os.environ['HOMEPATH'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
-            elif platform == "linux":
-                filename = os.environ['HOME'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
+        if ckpt_file is not None:
+            if ckpt_file.lower() == "auto":
+                filename = None
+                print("platform:", platform)
+                if platform == "win32":
+                    filename = os.environ['HOMEPATH'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
+                elif platform == "linux":
+                    filename = os.environ['HOME'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
 
-            cache = Path(filename)
+                cache = Path(filename)
+                folder = os.path.dirname(filename)
+                print("model folder", folder)
+                Path(folder).mkdir(parents=True, exist_ok=True)
 
-            if cache.is_file():
-                print("YES")
-            else:
-                torch.hub.download_url_to_file("https://sourceforge.net/projects/avio/files/bytetrack_m_mot17.pth.tar/download", filename)
-            
-            ckpt_file = filename
+                if not cache.is_file():
+                    torch.hub.download_url_to_file("https://sourceforge.net/projects/avio/files/bytetrack_m_mot17.pth.tar/download", filename)
+                
+                ckpt_file = filename
 
         try :
             self.args = Argument()
@@ -149,7 +150,8 @@ class ByteTrack:
                 else:
                     if "_m_" in trt_file:
                         self.exp = get_exp("yolox_m_mix_det.py", None)
-            if ckpt_file is not None:
+
+            elif ckpt_file is not None:
                 if "_l_" in ckpt_file:
                     self.exp = get_exp("yolox_l_mix_det.py", None)
                 else:

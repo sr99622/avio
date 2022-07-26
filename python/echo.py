@@ -50,7 +50,7 @@ class Echo:
 
         # Possible return arguments
 
-        #return img       # return a modified image
+        return img       # return a modified image
         #return pts       # return a modified pts
         #return False     # record trigger argument
 

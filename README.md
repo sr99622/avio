@@ -50,12 +50,16 @@ Download the source code and example programs
 git clone --recursive https://github.com/sr99622/avio.git
 ```
 
-Run the sample test program
+The avio source code comes with a small test file that you can use to verify
+the operation of the program.
 
 ```bash
 cd avio/python
-python test.py
+python play.py test.mp4
 ```
+
+Installing ByteTrack
+--------------------
 
 The ByteTrack and YOLOX module can be added for detection and tracking.  It is 
 suggested to use mamba to speed up this install
@@ -65,10 +69,33 @@ conda install mamba
 mamba install -c sr99622 -c pytorch yolox
 ```
 
-You can get the pretrained model (bytetrack_l_mot17.pth.tar) for this at 
-[[bytetrack_l_mot17]](https://drive.google.com/file/d/1XwfUuCBF4IgWBWK2H7oOhQgEj9Mrb3rz/view?usp=sharing)
-You will need to adjust the code in avio\python\bytetrack\interface.py to point to 
-the location of the model on the local machine.
+A pretrained model is available for downloading to test the program.  You can do
+this automatically using the following command.  This assumes you are still in the
+avio\python directory as shown above.
+
+```bash
+python play.py test.mp4 --vfilter format=bgr24 --bytetrack "ckpt_file=auto"
+```
+
+The ckpt_file=auto directive will tell the program to download the medium version
+of the bytetrack model and use that to implement tracking.  Other sizes and 
+variations of the bytetrack model are available from the [ByteTrack homepage] https://github.com/ifzhang/ByteTrack#model-zoo
+
+These models can be downloaded and placed on the local machine.  The ckpt_file=
+directive can be used to tell the program where to find the model.  Note that 
+the large and medium models are the only ones fully implemented here, other models
+will require adjustment to the bytetrack/interface.py file and installation of the
+appropriate file from ByteTrack/exps/example/mot to the avio/python/bytetrack folder.
+
+It is possible to improve model performance using fp16 math on the gpu.  The 
+following command shows an example
+
+```bash
+python play.py test.mp4 --vfilter format=bgr24 --bytetrack "ckpt_file=auto;fp16=True"
+```
+
+Installing TensorRT
+-------------------
 
 The model runtime can be improved dramatically using TensorRT.  To install TensorRT
 
@@ -103,16 +130,49 @@ cd torch2trt
 pip install .
 ```
 
-You now need to create the TensorRT version of the model for your specific GPU
+You now need to create the TensorRT version of the model for your specific GPU.
+TensorRT creates an optimized version of the model based on the characteristics
+of the specific GPU installed on the local machine.
 
 ```bash
 cd to your avio installation directory
 cd avio/python
-python bytetrack/trt.py -f bytetrack/yolox_l_mix_det.py -c /path/to/model/bytetrack_l_mot17.pth.tar
+python bytetrack/trt.py -f bytetrack/yolox_m_mix_det.py -c /path/to/model/bytetrack_m_mot17.pth.tar
 ```
 
 The TensorRT version of the model will be installed adjacent to the torch version
-/path/to/model/bytetrack_l_mot17_trt.pth
+/path/to/model/bytetrack_m_mot17_trt.pth
 
-You will need to adjust the parameter in the avio/python/bytetrack/interface.py file to match your local
-configuration.
+To run the optimized TensorRT model use the command
+
+```bash
+python play.py test.mp4 --vfilter format=bgr24 --bytetrack "trt_file=/path/to/model/bytetrack_m_mot17_trt.pth"
+```
+
+Credits
+-------
+
+ByteTrack is borrowed from https://github.com/ifzhang/ByteTrack
+
+YOLOX is borrowed from https://github.com/Megvii-BaseDetection/YOLOX
+
+## Cite YOLOX
+If you use YOLOX in your research, please cite our work by using the following BibTeX entry:
+
+```latex
+ @article{yolox2021,
+  title={YOLOX: Exceeding YOLO Series in 2021},
+  author={Ge, Zheng and Liu, Songtao and Wang, Feng and Li, Zeming and Sun, Jian},
+  journal={arXiv preprint arXiv:2107.08430},
+  year={2021}
+}
+```
+## In memory of Dr. Jian Sun
+Without the guidance of [Dr. Sun Jian](http://www.jiansun.org/), YOLOX would not have been released and open sourced to the community.
+The passing away of Dr. Sun Jian is a great loss to the Computer Vision field. We have added this section here to express our remembrance and condolences to our captain Dr. Sun.
+It is hoped that every AI practitioner in the world will stick to the concept of "continuous innovation to expand cognitive boundaries, and extraordinary technology to achieve product value" and move forward all the way.
+
+<div align="center"><img src="assets/sunjian.png" width="200"></div>
+没有孙剑博士的指导，YOLOX也不会问世并开源给社区使用。
+孙剑博士的离去是CV领域的一大损失，我们在此特别添加了这个部分来表达对我们的“船长”孙老师的纪念和哀思。
+希望世界上的每个AI从业者秉持着“持续创新拓展认知边界，非凡科技成就产品价值”的观念，一路向前。

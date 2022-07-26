@@ -15,25 +15,28 @@ build:
 requirements:
   build:
     - "{{ compiler('cxx') }}"  #[win]
-    - "{{ compiler('gcc') }}"  #[unix]
+    - "{{ compiler('gcc') }}"  #[linux]
     - python
     - cmake
     - ninja
-    - ffmpeg
-    - numpy
+    - ffmpeg  #[win]
+    - numpy   #[win]
+    - opencv  #[linux]
     - sdl2_ttf
 
   host:
     - python
     - pip
-    - ffmpeg 
-    - numpy
+    - ffmpeg  #[win]
+    - numpy   #[win]
+    - opencv  #[linux]
     - sdl2_ttf
 
   run:
     - python
-    - ffmpeg 
-    - numpy
+    - ffmpeg  #[win]
+    - numpy   #[win]
+    - opencv  #[linux]
     - sdl2_ttf
 
 test:
@@ -49,4 +52,4 @@ test:
 about:
   summary: A python media processing module
   license_file: LICENSE
-conda 
+  
