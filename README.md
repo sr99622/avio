@@ -60,7 +60,7 @@ Download the source code and example programs
 git clone --recursive https://github.com/sr99622/avio.git
 ```
 
-The avio source code comes with a small test file that you can use to verify
+The avio source code comes with a small test file that can be used to verify
 the operation of the program.
 
 ```bash
@@ -80,7 +80,7 @@ mamba install -c sr99622 -c pytorch yolox
 ```
 
 A pretrained model is available for downloading to test the program.  The model
-will download automatically the first time you run the program using the 
+will download automatically the first time the program is run.  Use the 
 following command from the avio/python directory.
 
 ```bash
@@ -137,13 +137,11 @@ cd torch2trt
 pip install .
 ```
 
-You now need to create the TensorRT version of the model for your specific GPU.
 TensorRT creates an optimized version of the model based on the characteristics
-of the specific GPU installed on the local machine.  The following command will 
-create the TensorRT version of the model and install it adjacent to the torch 
-version.  The model will take several minutes to build and will produce some
-warning messages which can safely be ignored.  The last command in the string will 
-launch the program.
+of the specific GPU installed on the local machine.  The following set of commands
+will create the TensorRT version of the model and run it.  The model will take several 
+minutes to build and will produce some warning messages which can safely be ignored.  
+Once the model has been created, the program can be run as shown.
 
 On Linux:
 
