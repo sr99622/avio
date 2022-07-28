@@ -101,7 +101,7 @@ python play.py test.mp4 --vfilter format=bgr24 --bytetrack ckpt_file=auto,fp16=T
 Installing TensorRT
 -------------------
 
-The model runtime can be improved dramatically using TensorRT.  To install TensorRT
+The model runtime performance can be improved dramatically using TensorRT.  To install TensorRT
 
 On Linux:
 
