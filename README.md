@@ -79,9 +79,9 @@ conda install mamba
 mamba install -c sr99622 -c pytorch yolox
 ```
 
-A pretrained model is available for downloading to test the program.  You can do
-this automatically using the following command.  This assumes you are still in the
-avio\python directory as shown above.
+A pretrained model is available for downloading to test the program.  The model
+will download automatically the first time you run the program using the 
+following command from the avio/python directory.
 
 ```bash
 python play.py test.mp4 --vfilter format=bgr24 --bytetrack ckpt_file=auto
@@ -90,14 +90,6 @@ python play.py test.mp4 --vfilter format=bgr24 --bytetrack ckpt_file=auto
 The ckpt_file=auto directive will tell the program to download the medium version
 of the bytetrack model and use that to implement tracking.  The auto download will
 place the file in the users home directory under ~/.cache/torch/hub/checkpoints
-
-Other sizes and variations of the bytetrack model are available from the 
-[[ByteTrack Model Zoo]](https://github.com/ifzhang/ByteTrack#model-zoo)
-These models can be downloaded and placed on the local machine.  The ckpt_file=
-directive can be used to tell the program where to find the model.  Note that 
-the large and medium models are the only ones fully implemented here, other models
-will require adjustment to the bytetrack/interface.py file and installation of the
-appropriate file from ByteTrack/exps/example/mot to the avio/python/bytetrack folder.
 
 It is possible to improve model performance using fp16 math on the gpu.  The 
 following command shows an example
@@ -114,6 +106,7 @@ The model runtime can be improved dramatically using TensorRT.  To install Tenso
 On Linux:
 
 ```bash
+cd $HOME
 pip install nvidia-pyindex
 pip install nvidia-tensorrt
 export CUDA_HOME=$CONDA_PREFIX
@@ -128,6 +121,8 @@ Go to https://developer.nvidia.com/tensorrt and download the zip file using your
 NVIDIA credentials.  Unzip the file in a local directory.
 
 ```bash
+cd %HOMEPATH%
+unzip TensorRT-x.x.x.x.Windows....
 cd TensorRT-x.x.x.x.Windows.......   #(the unzipped directory)
 cd TensorRT-x.x.x.x                  #(the content directory e.g. TensorRT-8.4.1.5)
 copy lib\*.dll %CONDA_PREFIX%\Library\bin
@@ -146,29 +141,24 @@ You now need to create the TensorRT version of the model for your specific GPU.
 TensorRT creates an optimized version of the model based on the characteristics
 of the specific GPU installed on the local machine.  The following command will 
 create the TensorRT version of the model and install it adjacent to the torch 
-version.
+version.  The model will take several minutes to build and will produce some
+warning messages which can safely be ignored.  The last command in the string will 
+launch the program.
+
+On Linux:
 
 ```bash
-cd to your avio installation directory
-cd avio/python
-python bytetrack/trt.py -f bytetrack/yolox_m_mix_det.py -c /path/to/model/bytetrack_m_mot17.pth.tar
+cd $HOME/avio/python
+python bytetrack/trt.py -f bytetrack/yolox_m_mix_det.py -c $HOME/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar
+python play.py test.mp4 --vfilter format=bgr24 --bytetrack trt_file=$HOME/.cache/torch/hub/checkpoints/bytetrack_m_mot17_trt.pth
 ```
 
-The TensorRT version of the model will be installed adjacent to the torch version
-/path/to/model/bytetrack_m_mot17_trt.pth
-
-For windows platform using auto model dowload to the torch cache, the command from the avio/python 
-directory is
+On Windows:
 
 ```bash
+cd %HOMEPATH%\avio\python
 python bytetrack\trt.py -f bytetrack\yolox_m_mix_det.py -c %HOMEPATH%\.cache\torch\hub\checkpoints\bytetrack_m_mot17.pth.tar
 python play.py test.mp4 --vfilter format=bgr24 --bytetrack trt_file=%HOMEPATH%\.cache\torch\hub\checkpoints\bytetrack_m_mot17_trt.pth
-```
-
-To run the optimized TensorRT model use the command
-
-```bash
-python play.py test.mp4 --vfilter format=bgr24 --bytetrack "trt_file=/path/to/model/bytetrack_m_mot17_trt.pth"
 ```
 
 Credits
