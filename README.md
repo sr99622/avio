@@ -50,8 +50,8 @@ conda config --add channels conda-forge
 Create environment for avio 
 
 ```bash
-conda create --name test -c sr99622 avio
-conda activate test
+conda create --name myenv -c sr99622 avio
+conda activate myenv
 ```
 
 Download the source code and example programs
