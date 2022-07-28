@@ -25,7 +25,7 @@ class Predictor(object):
         exp,
         trt_file=None,
         decoder=None,
-        device=torch.device("cuda"),
+        device=None,
         fp16=False
     ):
         self.model = model
@@ -42,13 +42,13 @@ class Predictor(object):
             model_trt = TRTModule()
             model_trt.load_state_dict(torch.load(trt_file))
 
-            x = torch.ones((1, 3, exp.test_size[0], exp.test_size[1]), device=device)
+            x = torch.ones((1, 3, exp.test_size[0], exp.test_size[1]), device=self.device)
             self.model(x)
             self.model = model_trt
         self.rgb_means = (0.485, 0.456, 0.406)
         self.std = (0.229, 0.224, 0.225)
 
-    def inference(self, img, timer):
+    def inference(self, img):
         img_info = {"id": 0}
         if isinstance(img, str):
             img_info["file_name"] = osp.basename(img)
@@ -174,8 +174,11 @@ class ByteTrack:
                     if "_m_" in ckpt_file:
                         self.exp = get_exp("yolox_m_mix_det.py", None)
             
-            #print("exp.name", self.exp.exp_name)
-            device = torch.device("cuda")
+            device_name = "cpu"
+            if torch.cuda.is_available():
+                device_name = "cuda"
+            device = torch.device(device_name)
+
             model = self.exp.get_model().to(device)
             model.eval()
 
@@ -211,7 +214,8 @@ class ByteTrack:
 
             img = arg[0][0]
             rts = arg[2][0]
-            outputs, img_info = self.predictor.inference(img, self.timer)
+            #outputs, img_info = self.predictor.inference(img, self.timer)
+            outputs, img_info = self.predictor.inference(img)
             if outputs[0] is not None:
                 online_targets = self.tracker.update(outputs[0], [img_info['height'], img_info['width']], self.exp.test_size)
                 online_tlwhs = []
