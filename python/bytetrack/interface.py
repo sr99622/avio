@@ -148,7 +148,7 @@ class ByteTrack:
                     cache = Path(ckpt_file)
 
                     if not cache.is_file():
-                        torch.hub.download_url_to_file("https://sourceforge.net/projects/avio/files/bytetrack_m_mot17.pth.tar/download", filename)
+                        torch.hub.download_url_to_file("https://sourceforge.net/projects/avio/files/bytetrack_m_mot17.pth.tar/download", ckpt_file)
 
             elif trt_file is not None:
                 if trt_file.lower() == "auto":
