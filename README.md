@@ -39,7 +39,7 @@ because it is the starting point for the installation.  To return to the user ho
 directory, use the environment variable. for windows, this is ```cd %HOMEPATH% ``` or on linux
 the command to return to the user home directory is ```cd $HOME```
 
-<b>Steps to Install</b>
+<b><u>Steps to Install</u></b>
 
 Add the conda forge channel to the conda configuration
 
