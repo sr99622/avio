@@ -29,15 +29,33 @@ Installation Quick Start
 Anaconda should be installed on the host machine.  The download is available at
 https://www.anaconda.com/products/distribution
 
+Using the anaconda prompt, create a new conda environment with avio and activate it, 
+as shown below.  Windows users may consult this link for further reference
+[[Anaconda prompt on Windows]](https://docs.anaconda.com/anaconda/user-guide/getting-started/#open-anaconda-prompt)
+
+The Anaconda prompt will start in the users home directory.  This location is important
+because it is the starting point for the installation.  To return to the user home
+directory, use the environment variable.
+
+for windows, this is
+
+```bash
+cd %HOMEPATH%
+```
+
+on linux, this is
+
+```bash
+cd $HOME
+```
+
 Add the conda forge channel to the conda configuration
 
 ```bash
 conda config --add channels conda-forge
 ```
 
-Using the anaconda prompt, create a new conda environment with avio and activate it, 
-as shown below.  Windows users may consult this link for further reference
-[[Anaconda prompt on Windows]](https://docs.anaconda.com/anaconda/user-guide/getting-started/#open-anaconda-prompt)
+Create environment for avio 
 
 ```bash
 conda create --name test -c sr99622 avio
@@ -74,7 +92,7 @@ this automatically using the following command.  This assumes you are still in t
 avio\python directory as shown above.
 
 ```bash
-python play.py test.mp4 --vfilter format=bgr24 --bytetrack "ckpt_file=auto"
+python play.py test.mp4 --vfilter format=bgr24 --bytetrack ckpt_file=auto
 ```
 
 The ckpt_file=auto directive will tell the program to download the medium version
@@ -93,7 +111,7 @@ It is possible to improve model performance using fp16 math on the gpu.  The
 following command shows an example
 
 ```bash
-python play.py test.mp4 --vfilter format=bgr24 --bytetrack "ckpt_file=auto;fp16=True"
+python play.py test.mp4 --vfilter format=bgr24 --bytetrack ckpt_file=auto,fp16=True
 ```
 
 Installing TensorRT
@@ -134,7 +152,9 @@ pip install .
 
 You now need to create the TensorRT version of the model for your specific GPU.
 TensorRT creates an optimized version of the model based on the characteristics
-of the specific GPU installed on the local machine.
+of the specific GPU installed on the local machine.  The following command will 
+create the TensorRT version of the model and install it adjacent to the torch 
+version.
 
 ```bash
 cd to your avio installation directory
