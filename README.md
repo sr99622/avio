@@ -82,7 +82,7 @@ mamba install -c sr99622 -c pytorch yolox
 
 A pretrained model is available for downloading to test the program.  The model
 will download automatically the first time the program is run.  Use the 
-following command from the avio/python directory.
+following command.
 
 ```bash
 python play.py test.mp4 --vfilter format=bgr24 --bytetrack ckpt_file=auto
