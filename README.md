@@ -36,13 +36,10 @@ For linux users, the terminal should start automatically in the Anaconda environ
 
 The Anaconda prompt will start in the users home directory.  This location is important
 because it is the starting point for the installation.  To return to the user home
-directory, use the environment variable. for windows, this is ```bash cd %HOMEPATH% ```
+directory, use the environment variable. for windows, this is ```cd %HOMEPATH% ``` or on linux
+the command to return to the user home directory is ```cd $HOME```
 
-on linux, this is
-
-```bash
-cd $HOME
-```
+<b>Steps to Install</b>
 
 Add the conda forge channel to the conda configuration
 
