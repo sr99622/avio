@@ -145,6 +145,14 @@ python bytetrack/trt.py -f bytetrack/yolox_m_mix_det.py -c /path/to/model/bytetr
 The TensorRT version of the model will be installed adjacent to the torch version
 /path/to/model/bytetrack_m_mot17_trt.pth
 
+For windows platform using auto model dowload to the torch cache, the command from the avio/python 
+directory is
+
+```bash
+python bytetrack\trt.py -f bytetrack\yolox_m_mix_det.py -c %HOMEPATH%\.cache\torch\hub\checkpoints\bytetrack_m_mot17.pth.tar
+python play.py test.mp4 --vfilter format=bgr24 --bytetrack trt_file=%HOMEPATH%\.cache\torch\hub\checkpoints\bytetrack_m_mot17_trt.pth
+```
+
 To run the optimized TensorRT model use the command
 
 ```bash

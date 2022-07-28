@@ -221,7 +221,7 @@ public:
         display_in.pythonInitArg = arg;
     }
 
-    int run()
+    void run()
     {
         av_log_set_level(AV_LOG_PANIC);        
 
@@ -328,7 +328,7 @@ public:
             delete ops[i];
         }
 
-        return 0;
+        std::exit(0);
     }
 };
 

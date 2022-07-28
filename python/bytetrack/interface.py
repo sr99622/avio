@@ -102,7 +102,7 @@ class ByteTrack:
         trt_file = None
         trt = False
 
-        unpacked_args = arg[0].split(";")
+        unpacked_args = arg[0].split(",")
         for line in unpacked_args:
             key_value = line.split("=")
             print("key  ", key_value[0])
