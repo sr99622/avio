@@ -16,6 +16,8 @@ from yolox.tracking_utils.timer import Timer
 
 from torchvision.transforms import functional
 
+from trt import convert
+
 class Predictor(object):
     def __init__(
         self,
@@ -93,6 +95,23 @@ class Argument:
     aspect_ratio_thresh = 1.6
     min_box_area = 10.0
 
+def get_auto_ckpt_filename():
+    filename = None
+    if platform == "win32":
+        filename = os.environ['HOMEPATH'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
+    elif platform == "linux":
+        filename = os.environ['HOME'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
+    return filename
+
+def get_auto_trt_filename():
+    filename = None
+    if platform == "win32":
+        filename = os.environ['HOMEPATH'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17_trt.pth"
+    elif platform == "linux":
+        filename = os.environ['HOME'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17_trt.pth"
+    return filename
+
+
 class ByteTrack:
     def __init__(self, arg):
         print("ByteTrack.__init__")
@@ -101,6 +120,7 @@ class ByteTrack:
         fp16 = False
         trt_file = None
         trt = False
+
 
         unpacked_args = arg[0].split(",")
         for line in unpacked_args:
@@ -121,28 +141,25 @@ class ByteTrack:
         print("trt", trt)
         print("fp16", fp16)
 
-        if ckpt_file is not None:
-            if ckpt_file.lower() == "auto":
-                filename = None
-                print("platform:", platform)
-                if platform == "win32":
-                    filename = os.environ['HOMEPATH'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
-                elif platform == "linux":
-                    filename = os.environ['HOME'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar"
-
-                cache = Path(filename)
-                folder = os.path.dirname(filename)
-                print("model folder", folder)
-                Path(folder).mkdir(parents=True, exist_ok=True)
-
-                if not cache.is_file():
-                    torch.hub.download_url_to_file("https://sourceforge.net/projects/avio/files/bytetrack_m_mot17.pth.tar/download", filename)
-                
-                ckpt_file = filename
-
         try :
+            if ckpt_file is not None:
+                if ckpt_file.lower() == "auto":
+                    ckpt_file = get_auto_ckpt_filename()
+                    cache = Path(ckpt_file)
+
+                    if not cache.is_file():
+                        torch.hub.download_url_to_file("https://sourceforge.net/projects/avio/files/bytetrack_m_mot17.pth.tar/download", filename)
+
+            elif trt_file is not None:
+                if trt_file.lower() == "auto":
+                    trt_file = get_auto_trt_filename()
+                    cache = Path(trt_file)
+
+                    if not cache.is_file():
+                        source = get_auto_ckpt_filename()
+                        convert("bytetrack/yolox_m_mix_det.py", source)
+
             self.args = Argument()
-            print(self.args.mot20)
 
             if trt_file is not None:
                 if "_l_" in trt_file:
@@ -150,15 +167,14 @@ class ByteTrack:
                 else:
                     if "_m_" in trt_file:
                         self.exp = get_exp("yolox_m_mix_det.py", None)
-
-            elif ckpt_file is not None:
+            if ckpt_file is not None:
                 if "_l_" in ckpt_file:
                     self.exp = get_exp("yolox_l_mix_det.py", None)
                 else:
                     if "_m_" in ckpt_file:
                         self.exp = get_exp("yolox_m_mix_det.py", None)
             
-            print("exp.name", self.exp.exp_name)
+            #print("exp.name", self.exp.exp_name)
             device = torch.device("cuda")
             model = self.exp.get_model().to(device)
             model.eval()

@@ -27,18 +27,17 @@ def make_parser():
     return parser
 
 
-@logger.catch
 def main():
     args = make_parser().parse_args()
-    exp = get_exp(args.exp_file, args.name)
-    if not args.experiment_name:
-        args.experiment_name = exp.exp_name
+    convert(args.exp_file, args.ckpt)
 
+
+@logger.catch
+def convert(exp_file, ckpt_file):
+    exp = get_exp(exp_file, None)
     model = exp.get_model()
 
-    ckpt_file = args.ckpt
     ckpt = torch.load(ckpt_file, map_location="cpu")
-    # load the model state dict
    
     parts = os.path.split(ckpt_file)
     base = parts[0]
