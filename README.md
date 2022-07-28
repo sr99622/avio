@@ -140,25 +140,13 @@ pip install .
 ```
 
 TensorRT creates an optimized version of the model based on the characteristics
-of the specific GPU installed on the local machine.  The following set of commands
+of the specific GPU installed on the local machine.  The following command
 will create the TensorRT version of the model and run it.  The model will take several 
 minutes to build and will produce some warning messages which can safely be ignored.
-Once the model has been created, the program can be run as shown.
-
-On Linux:
+Once the model has been created, the program will launch.
 
 ```bash
-cd $HOME/avio/python
-python bytetrack/trt.py -f bytetrack/yolox_m_mix_det.py -c $HOME/.cache/torch/hub/checkpoints/bytetrack_m_mot17.pth.tar
-python play.py test.mp4 --vfilter format=bgr24 --bytetrack trt_file=$HOME/.cache/torch/hub/checkpoints/bytetrack_m_mot17_trt.pth
-```
-
-On Windows:
-
-```bash
-cd %HOMEPATH%\avio\python
-python bytetrack\trt.py -f bytetrack\yolox_m_mix_det.py -c %HOMEPATH%\.cache\torch\hub\checkpoints\bytetrack_m_mot17.pth.tar
-python play.py test.mp4 --vfilter format=bgr24 --bytetrack trt_file=%HOMEPATH%\.cache\torch\hub\checkpoints\bytetrack_m_mot17_trt.pth
+python play.py test.mp4 --vfilter format=bgr24 --bytetrack trt_file=auto 
 ```
 
 Credits
