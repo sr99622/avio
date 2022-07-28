@@ -141,7 +141,7 @@ pip install .
 TensorRT creates an optimized version of the model based on the characteristics
 of the specific GPU installed on the local machine.  The following set of commands
 will create the TensorRT version of the model and run it.  The model will take several 
-minutes to build and will produce some warning messages which can safely be ignored.  
+minutes to build and will produce some warning messages which can safely be ignored.
 Once the model has been created, the program can be run as shown.
 
 On Linux:
