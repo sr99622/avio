@@ -26,22 +26,17 @@ audience.
 Installation Quick Start
 -------------------
 
-Anaconda should be installed on the host machine.  The download is available at
+Anaconda must be installed on the host machine.  The download is available at
 https://www.anaconda.com/products/distribution
 
 Using the anaconda prompt, create a new conda environment with avio and activate it, 
 as shown below.  Windows users may consult this link for further reference
-[[Anaconda prompt on Windows]](https://docs.anaconda.com/anaconda/user-guide/getting-started/#open-anaconda-prompt)
+[[Anaconda prompt on Windows]](https://docs.anaconda.com/anaconda/user-guide/getting-started/#open-anaconda-prompt).
+For linux users, the terminal should start automatically in the Anaconda environment.
 
 The Anaconda prompt will start in the users home directory.  This location is important
 because it is the starting point for the installation.  To return to the user home
-directory, use the environment variable.
-
-for windows, this is
-
-```bash
-cd %HOMEPATH%
-```
+directory, use the environment variable. for windows, this is ```bash cd %HOMEPATH% ```
 
 on linux, this is
 
