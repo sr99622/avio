@@ -39,7 +39,8 @@ because it is the starting point for the installation.  To return to the user ho
 directory, use the environment variable. for windows, this is ```cd %HOMEPATH% ``` or on linux
 the command to return to the user home directory is ```cd $HOME```
 
-**Steps to Install**
+Installing avio
+---------------
 
 Add the conda forge channel to the conda configuration
 
