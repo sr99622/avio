@@ -47,7 +47,7 @@ Add the conda forge channel to the conda configuration
 conda config --add channels conda-forge
 ```
 
-Create environment for avio 
+Create environment for avio and activate it
 
 ```bash
 conda create --name myenv -c sr99622 avio
