@@ -18,6 +18,8 @@ from torchvision.transforms import functional
 
 from trt import convert
 
+
+#'''
 class Predictor(object):
     def __init__(
         self,
@@ -38,6 +40,7 @@ class Predictor(object):
         self.fp16 = fp16
         if trt_file is not None:
             from torch2trt import TRTModule
+            from trt import convert
 
             model_trt = TRTModule()
             model_trt.load_state_dict(torch.load(trt_file))
@@ -111,11 +114,11 @@ def get_auto_trt_filename():
         filename = os.environ['HOME'] + "/.cache/torch/hub/checkpoints/bytetrack_m_mot17_trt.pth"
     return filename
 
-
+#'''
 class ByteTrack:
     def __init__(self, arg):
         print("ByteTrack.__init__")
-
+        #'''
         ckpt_file = None
         fp16 = False
         trt_file = None
@@ -145,9 +148,11 @@ class ByteTrack:
             if ckpt_file is not None:
                 if ckpt_file.lower() == "auto":
                     ckpt_file = get_auto_ckpt_filename()
+                    print("cpkt_file:", ckpt_file)
                     cache = Path(ckpt_file)
 
                     if not cache.is_file():
+                        cache.parent.mkdir(parents=True, exist_ok=True)
                         torch.hub.download_url_to_file("https://sourceforge.net/projects/avio/files/bytetrack_m_mot17.pth.tar/download", ckpt_file)
 
             elif trt_file is not None:
@@ -209,6 +214,7 @@ class ByteTrack:
 
     def __call__(self, arg):
 
+        #'''
         try :
             self.timer.tic()
 
@@ -247,3 +253,4 @@ class ByteTrack:
         except BaseException as err:
             logger.exception("ByteTrack runtime error")
             raise
+        #'''
