@@ -159,6 +159,7 @@ class ByteTrack:
 
                     if not cache.is_file():
                         source = get_auto_ckpt_filename()
+                        from trt import convert
                         convert("bytetrack/yolox_m_mix_det.py", source)
 
             self.args = Argument()
