@@ -236,7 +236,7 @@ if __name__ == "__main__":
     parser.add_argument("--db_read", type=ascii, help="db_name=track.db")
     parser.add_argument("--retinanet", help="RetinaNet", action="store_true")
     parser.add_argument("--segment", help="semantic segmentation", action="store_true")
-    parser.add_argument("--bytetrack", type=ascii, help="trt=False,fp16=False,ckpt=bytetrack_l_mot17.pth.tar,trt_file=bytetrack_l_mot17_trt.pth")
+    parser.add_argument("--bytetrack", type=ascii, help="ckpt_file=bytetrack_l_mot17.pth.tar,fp16=True,force_cpu=True,trt_file=bytetrack_l_mot17_trt.pth")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int)
     parser.add_argument("--end_at", type=int)

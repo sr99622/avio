@@ -120,6 +120,7 @@ class ByteTrack:
         fp16 = False
         trt_file = None
         trt = False
+        force_cpu = False
 
 
         unpacked_args = arg[0].split(",")
@@ -134,12 +135,17 @@ class ByteTrack:
             if key_value[0] == "trt_file":
                 trt_file = key_value[1]
                 trt = True
+            if key_value[0] == "force_cpu":
+                force_cpu = key_value[1].lower() == "true"
+
+
 
         print("class ByteTrack initialized with the values from command line")
         print("ckpt", ckpt_file)
         print("trt_file", trt_file)
         print("trt", trt)
         print("fp16", fp16)
+        print("force_cpu", force_cpu)
 
         try :
             if ckpt_file is not None:
@@ -178,8 +184,9 @@ class ByteTrack:
                         self.exp = get_exp("yolox_m_mix_det.py", None)
             
             device_name = "cpu"
-            if torch.cuda.is_available():
-                device_name = "cuda"
+            if not force_cpu:
+                if torch.cuda.is_available():
+                    device_name = "cuda"
             device = torch.device(device_name)
 
             model = self.exp.get_model().to(device)
