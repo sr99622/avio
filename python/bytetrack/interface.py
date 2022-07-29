@@ -147,7 +147,6 @@ class ByteTrack:
                     ckpt_file = get_auto_ckpt_filename()
                     print("cpkt_file:", ckpt_file)
                     cache = Path(ckpt_file)
-                    print("eat my shit")
 
                     if not cache.is_file():
                         cache.parent.mkdir(parents=True, exist_ok=True)
