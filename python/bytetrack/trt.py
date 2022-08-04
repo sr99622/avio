@@ -53,6 +53,8 @@ def convert(exp_file, ckpt_file):
     model.eval()
     model.cuda()
     model.head.decode_in_inference = False
+    print("exp.test_size[0]", exp.test_size[0])
+    print("exp.test_size[1]", exp.test_size[1])
     x = torch.ones(1, 3, exp.test_size[0], exp.test_size[1]).cuda()
     model_trt = torch2trt(
         model,

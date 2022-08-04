@@ -1,5 +1,6 @@
 import argparse
 import os
+import warnings
 
 import avio
 
@@ -34,6 +35,10 @@ class Player:
         disable_hud = False
         if args.disable_hud:
             disable_hud = True
+        
+        enable_status = False
+        if args.enable_status:
+            enable_status = True
 
         hw_decode = False
         if args.hw_decode:
@@ -63,9 +68,21 @@ class Player:
         if args.retinanet:
             retinanet = True
 
-        bytetrack = False
+        bytetrack = ""
         if args.bytetrack:
             bytetrack = eval(args.bytetrack)
+
+        detectron2 = ""
+        if args.detectron2:
+            detectron2 = eval(args.detectron2)
+
+        instanceseg = ""
+        if args.instanceseg:
+            instanceseg = eval(args.instanceseg)
+
+        keypoint = ""
+        if args.keypoint:
+            keypoint = eval(args.keypoint)
 
         echo = ""
         if args.echo:
@@ -103,6 +120,8 @@ class Player:
             display.pin_osd(True)
         if disable_hud:
             display.osd_enabled = False
+        if enable_status:
+            display.enable_status(True)
         display.ignore_video_pts = ignore_video_pts
         display.prepend_recent_write = True
         #display.font_file = "/usr/share/fonts/liberation-serif/LiberationSerif-Bold.ttf"
@@ -207,15 +226,26 @@ class Player:
             process.set_python(display, "./segment/interface.py", "Segment")
         if retinanet:
             process.set_python(display, "./retinanet.py", "RetinaNet")
-        if bytetrack:
+        if len(bytetrack) > 0:
             process.set_python(display, "./bytetrack/interface.py", "ByteTrack")
             process.set_python_init_arg(display, bytetrack)
-            
+        if len(detectron2) > 0:
+            process.set_python(display, "./detectron2/detection.py", "Detection")
+            process.set_python_init_arg(display, detectron2)
+        if len(instanceseg) > 0:
+            process.set_python(display, "./detectron2/instancesegmentation.py", "InstanceSegmentation")
+            process.set_python_init_arg(display, instanceseg)
+        if len(keypoint) > 0:
+            process.set_python(display, "./detectron2/keypoint.py", "Keypoint")
+            process.set_python_init_arg(display, keypoint)
         process.add_display(display)
         process.run()
         print("python done")
         
 if __name__ == "__main__":
+
+    warnings.filterwarnings("ignore", category=UserWarning)
+
     parser = argparse.ArgumentParser(description="process media")
     parser.add_argument("filename", metavar="Filename", type=ascii, nargs="+", help="enter axis (x or y)")
     parser.add_argument("--vfilter", type=ascii)
@@ -223,6 +253,7 @@ if __name__ == "__main__":
     parser.add_argument("--no_video", help="no video", action="store_true")
     parser.add_argument("--no_audio", help="no audio", action="store_true")
     parser.add_argument("--pin_osd", help="pin_osd", action="store_true")
+    parser.add_argument("--enable_status", help="enable_status", action="store_true")
     parser.add_argument("--disable_hud", help="disable_hud", action="store_true")
     parser.add_argument("--hw_decode", help="hw_decode", action="store_true")
     parser.add_argument("--encode", help="encode", action="store_true")
@@ -235,6 +266,9 @@ if __name__ == "__main__":
     parser.add_argument("--echo", type=ascii, help="key1=value1,key1=value2")
     parser.add_argument("--db_read", type=ascii, help="db_name=track.db")
     parser.add_argument("--retinanet", help="RetinaNet", action="store_true")
+    parser.add_argument("--detectron2", type=ascii, help="key1=value1,key2=value2")
+    parser.add_argument("--instanceseg", type=ascii, help='key1=value1,key2=value2')
+    parser.add_argument("--keypoint", type=ascii, help='key1=value1,key2=value2')
     parser.add_argument("--segment", help="semantic segmentation", action="store_true")
     parser.add_argument("--bytetrack", type=ascii, help="ckpt_file=bytetrack_l_mot17.pth.tar,fp16=True,force_cpu=True,trt_file=bytetrack_l_mot17_trt.pth")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")

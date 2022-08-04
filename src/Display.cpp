@@ -328,7 +328,7 @@ bool Display::display()
             paused_frame = f;
 
             if (Py_IsInitialized() && havePython()) {
-                //if (fix_audio_pop) SDL_LockAudioDevice(audioDeviceID);
+                auto start = clock.now();
                 if (!pyRunner)
                     pyRunner = new PyRunner(pythonDir, pythonFile, pythonClass, pythonInitArg);
 
@@ -336,11 +336,18 @@ bool Display::display()
                     if (pyRunner->run(f, Event::pack(events)))
                         toggleRecord();
                 }
-                //if (fix_audio_pop) SDL_UnlockAudioDevice(audioDeviceID);
+                auto stop = clock.now();
+                int runtime = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+                std::stringstream str;
+                str << std::fixed << std::setprecision(1) << "Python Runtime (ms): " << runtime / 1000.0f;
+                osd.lblPyRuntime_text = str.str();
             }
 
             if (f.isValid()) {
                 ex.ck(initVideo(f.m_frame->width, f.m_frame->height, (AVPixelFormat)f.m_frame->format), "initVideo");
+                std::stringstream str;
+                str << "RTS: " << f.m_rts;
+                osd.lblRTS_text = str.str();
                 if (osd_enabled) for (SDL_Event& event : events) osd.handleEvent(event, f);
                 if (key_record_flag) {
                     key_record_flag = false;
@@ -563,6 +570,11 @@ bool Display::havePython()
 void Display::pin_osd(bool arg)
 {
     osd.pin_osd = arg;
+}
+
+void Display::enable_status(bool arg)
+{
+    osd.status_enabled = arg;
 }
 
 std::string Display::audioDeviceStatus() const

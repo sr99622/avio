@@ -21,10 +21,14 @@ public:
 	void showMark(float pct);
 	void render(SDL_Renderer* renderer);
 	void fade(Frame& f);
+	void status_background(Frame& f);
+	void build_status();
+	void handle_status();
 
 	bool heads_up = false;
 	bool pin_osd = false;
 	bool highlight = false;
+	bool status_enabled = false;
 	int64_t last_pts = AV_NOPTS_VALUE;
 
 	time_t timeout_start;
@@ -45,6 +49,15 @@ public:
 	Label* lblMark = nullptr;
 	ButtonRec* btnRec = nullptr;
 	ButtonPlay* btnPlay = nullptr;
+
+	int panel_start_row = -1;
+	int panel_stop_row = -1;
+	int panel_stop_column = -1;
+
+	Label* lblPyRuntime = nullptr;
+	std::string lblPyRuntime_text = "Python Runtime:";
+	Label* lblRTS = nullptr;
+	std::string lblRTS_text = "RTS:";
 
 	Reader* reader = nullptr;
 	Writer* writer = nullptr;

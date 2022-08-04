@@ -1,0 +1,1 @@
+python demo.py --config-file ../configs/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml --video-input ~/Videos/odessa.mp4 --opts MODEL.WEIGHTS ../models/COCO-InstanceSegmentation/model_final_f10217.pkl

@@ -7,9 +7,8 @@ from sys import platform
 
 from loguru import logger
 
-from yolox.data.data_augment import preproc
 from yolox.exp import get_exp
-from yolox.utils import fuse_model, get_model_info, postprocess
+from yolox.utils import postprocess
 from yolox.utils.visualize import plot_tracking
 from yolox.tracker.byte_tracker import BYTETracker
 from yolox.tracking_utils.timer import Timer
@@ -141,7 +140,7 @@ class ByteTrack:
 
 
         print("class ByteTrack initialized with the values from command line")
-        print("ckpt", ckpt_file)
+        print("ckpt_file", ckpt_file)
         print("trt_file", trt_file)
         print("trt", trt)
         print("fp16", fp16)

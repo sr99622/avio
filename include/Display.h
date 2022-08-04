@@ -45,6 +45,7 @@ public:
     bool display();
     bool havePython();
     void pin_osd(bool arg);
+    void enable_status(bool arg);
     void clearInputQueues();
     
     bool paused = false;
@@ -113,7 +114,6 @@ public:
     Queue<char> sdl_buffer;
     int audio_buffer_len = 0;
     bool disable_audio = false;
-    //bool fix_audio_pop = false;
     bool ignore_video_pts = false;
     bool audio_eof = false;
 
@@ -123,6 +123,8 @@ public:
 
     uint64_t start_time;
     uint64_t duration;
+
+    std::chrono::steady_clock clock;
 
     std::deque<Frame> recent;
     bool request_recent_clear = false;

@@ -1,0 +1,1 @@
+python demo.py --config-file ../configs/COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml --video-input ~/Videos/odessa.mp4 --opts MODEL.WEIGHTS ../models/COCO-Keypoints/model_final_a6e10b.pkl

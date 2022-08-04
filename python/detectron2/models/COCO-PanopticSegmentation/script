@@ -1,0 +1,1 @@
+python demo.py --config-file ../configs/COCO-PanopticSegmentation/panoptic_fpn_R_50_3x.yaml --video-input ~/Videos/odessa.mp4 --opts MODEL.WEIGHTS ../models/COCO-PanopticSegmentation/model_final_c10459.pkl

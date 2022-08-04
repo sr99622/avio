@@ -18,6 +18,8 @@ Osd::Osd()
     widgets.push_back(btnRec);
     btnPlay = new ButtonPlay(this);
     widgets.push_back(btnPlay);
+
+    build_status();
 }
 
 std::string Osd::strElapsed(int64_t elapsed) const
@@ -70,7 +72,43 @@ void Osd::fade(Frame& f)
         menu_row++;
     }
 
+    if (status_enabled) status_background(f);
+
     f.m_faded = true;
+}
+
+void Osd::build_status()
+{
+    lblPyRuntime = new Label(this);
+    widgets.push_back(lblPyRuntime);
+    lblRTS = new Label(this);
+    widgets.push_back(lblRTS);
+}
+
+void Osd::status_background(Frame& f) 
+{
+    panel_start_row = f.m_frame->height * 0.20f;
+    panel_stop_row = f.m_frame->height * 0.60f;
+    panel_stop_column = f.m_frame->linesize[0] * 0.30f;
+    for (int y = panel_start_row; y < panel_stop_row; y++) {
+        for (int x = 0; x < panel_stop_column; x++) {
+            int i = y * f.m_frame->linesize[0] + x;
+            f.m_frame->data[0][i] *= 0.2;
+        }
+    }
+}
+
+void Osd::handle_status()
+{
+    lblPyRuntime->font = font;
+    SDL_Point lblPyRuntime_text_size = lblPyRuntime->setText(lblPyRuntime_text);
+    lblPyRuntime->x = 16;
+    lblPyRuntime->y = panel_start_row;
+
+    lblRTS->font = font;
+    SDL_Point lblRTS_text_size = lblRTS->setText(lblRTS_text);
+    lblRTS->x = 16;
+    lblRTS->y = panel_start_row + lblPyRuntime_text_size.y;
 }
 
 void Osd::handleEvent(SDL_Event& e, Frame& f) 
@@ -125,6 +163,8 @@ void Osd::handleEvent(SDL_Event& e, Frame& f)
         btnPlay->x = btnRec->x + btnRec_size.x + 16;
         btnPlay->width = btnRec->width * 0.5f;
         btnPlay->y = bar->y - (int)btnPlay_size.y / 2.0f + (int)bar->height / 2.0f;
+
+        if (status_enabled) handle_status();
 
         fade(f);
 
