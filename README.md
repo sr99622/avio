@@ -153,12 +153,50 @@ Once the model has been created, the program will launch.
 python play.py test.mp4 --vfilter format=bgr24 --bytetrack trt_file=auto 
 ```
 
+Installing detectron2
+---------------------
+
+Download the source code and compile.  This repository has been modified from the 
+original detectron2 to disable extensions.
+
+
+```bash
+git clone https://github.com/sr99622/detectron2.git
+cd detectron2
+pip install .
+```
+
+
 Credits
 -------
+
+
 
 ByteTrack is borrowed from https://github.com/ifzhang/ByteTrack
 
 YOLOX is borrowed from https://github.com/Megvii-BaseDetection/YOLOX
+
+detectron2 is borrowed from https://github.com/facebookresearch/detectron2
+
+
+-----------------------------------------------
+
+## Cite ByteTrack
+
+```
+@article{zhang2022bytetrack,
+  title={ByteTrack: Multi-Object Tracking by Associating Every Detection Box},
+  author={Zhang, Yifu and Sun, Peize and Jiang, Yi and Yu, Dongdong and Weng, Fucheng and Yuan, Zehuan and Luo, Ping and Liu, Wenyu and Wang, Xinggang},
+  booktitle={Proceedings of the European Conference on Computer Vision (ECCV)},
+  year={2022}
+}
+```
+
+## Acknowledgement
+
+A large part of the code is borrowed from [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX), [FairMOT](https://github.com/ifzhang/FairMOT), [TransTrack](https://github.com/PeizeSun/TransTrack) and [JDE-Cpp](https://github.com/samylee/Towards-Realtime-MOT-Cpp). Many thanks for their wonderful works.
+
+----------------------------------------------
 
 ## Cite YOLOX
 If you use YOLOX in your research, please cite our work by using the following BibTeX entry:
@@ -180,3 +218,20 @@ It is hoped that every AI practitioner in the world will stick to the concept of
 没有孙剑博士的指导，YOLOX也不会问世并开源给社区使用。
 孙剑博士的离去是CV领域的一大损失，我们在此特别添加了这个部分来表达对我们的“船长”孙老师的纪念和哀思。
 希望世界上的每个AI从业者秉持着“持续创新拓展认知边界，非凡科技成就产品价值”的观念，一路向前。
+
+-------------------------------------------------
+
+## Citing Detectron2
+
+If you use Detectron2 in your research or wish to refer to the baseline results published in the [Model Zoo](MODEL_ZOO.md), please use the following BibTeX entry.
+
+```BibTeX
+@misc{wu2019detectron2,
+  author =       {Yuxin Wu and Alexander Kirillov and Francisco Massa and
+                  Wan-Yen Lo and Ross Girshick},
+  title =        {Detectron2},
+  howpublished = {\url{https://github.com/facebookresearch/detectron2}},
+  year =         {2019}
+}
+```
+

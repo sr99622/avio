@@ -8,6 +8,7 @@ _generate
 *.cfg
 *.weights
 *.egg-info
+*.pkl
 .vscode/
 _templates
 __pycache__
