@@ -60,10 +60,6 @@ class Player:
         if args.write_enable:
             write_enable = True
 
-        segment = False
-        if args.segment:
-            segment = True
-
         retinanet = False
         if args.retinanet:
             retinanet = True
@@ -76,9 +72,9 @@ class Player:
         if args.detectron2:
             detectron2 = eval(args.detectron2)
 
-        instanceseg = ""
-        if args.instanceseg:
-            instanceseg = eval(args.instanceseg)
+        segment = ""
+        if args.segment:
+            segment = eval(args.segment)
 
         keypoint = ""
         if args.keypoint:
@@ -222,8 +218,6 @@ class Player:
         if len(db_read) > 0:
             process.set_python(display, "./db_reader.py", "DbReader")
             process.set_python_init_arg(display, db_read)
-        if segment:
-            process.set_python(display, "./segment/interface.py", "Segment")
         if retinanet:
             process.set_python(display, "./retinanet.py", "RetinaNet")
         if len(bytetrack) > 0:
@@ -232,9 +226,9 @@ class Player:
         if len(detectron2) > 0:
             process.set_python(display, "./detectron2/detection.py", "Detection")
             process.set_python_init_arg(display, detectron2)
-        if len(instanceseg) > 0:
-            process.set_python(display, "./detectron2/instancesegmentation.py", "InstanceSegmentation")
-            process.set_python_init_arg(display, instanceseg)
+        if len(segment) > 0:
+            process.set_python(display, "./detectron2/segment.py", "InstanceSegmentation")
+            process.set_python_init_arg(display, segment)
         if len(keypoint) > 0:
             process.set_python(display, "./detectron2/keypoint.py", "Keypoint")
             process.set_python_init_arg(display, keypoint)
@@ -267,9 +261,8 @@ if __name__ == "__main__":
     parser.add_argument("--db_read", type=ascii, help="db_name=track.db")
     parser.add_argument("--retinanet", help="RetinaNet", action="store_true")
     parser.add_argument("--detectron2", type=ascii, help="key1=value1,key2=value2")
-    parser.add_argument("--instanceseg", type=ascii, help='key1=value1,key2=value2')
+    parser.add_argument("--segment", type=ascii, help='key1=value1,key2=value2')
     parser.add_argument("--keypoint", type=ascii, help='key1=value1,key2=value2')
-    parser.add_argument("--segment", help="semantic segmentation", action="store_true")
     parser.add_argument("--bytetrack", type=ascii, help="ckpt_file=bytetrack_l_mot17.pth.tar,fp16=True,force_cpu=True,trt_file=bytetrack_l_mot17_trt.pth")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int)

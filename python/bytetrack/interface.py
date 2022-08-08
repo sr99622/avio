@@ -76,6 +76,10 @@ class Predictor(object):
         if self.fp16:
             img = img.half()  # to FP16
 
+        #print("self.confthre", self.confthre)
+        #print("self.nmsthre", self.nmsthre)
+        #print("self.num_classes", self.num_classes)
+
         with torch.no_grad():
             outputs = self.model(img)
             if self.decoder is not None:
@@ -228,6 +232,7 @@ class ByteTrack:
             outputs, img_info = self.predictor.inference(img)
             if outputs[0] is not None:
                 online_targets = self.tracker.update(outputs[0], [img_info['height'], img_info['width']], self.exp.test_size)
+
                 online_tlwhs = []
                 online_ids = []
                 online_scores = []
