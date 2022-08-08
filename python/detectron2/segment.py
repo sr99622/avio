@@ -2,6 +2,7 @@
 import numpy as np
 import torch
 import os
+import cv2
 from loguru import logger
 from sys import platform
 from pathlib import Path
@@ -9,7 +10,7 @@ from detectron2.config import get_cfg
 from predictor import Predictor
 from tracker import DetectedInstance, SimpleTracker
 from yolox.tracker.byte_tracker import BYTETracker
-from torchvision import ops
+from torchvision import ops, utils
 
 # constants
 WINDOW_NAME = "COCO detections"
@@ -44,6 +45,8 @@ class InstanceSegmentation:
             ckpt_file = None
             fp16 = True 
             self.simple = False
+            self.draw_overlay = False
+
 
             unpacked_args = arg[0].split(",")
             for line in unpacked_args:
@@ -56,11 +59,14 @@ class InstanceSegmentation:
                     fp16 = not key_value[1].lower() == "false"
                 if key_value[0] == "simple":
                     self.simple = key_value[1].lower() == "true"
+                if key_value[0] == "overlay":
+                    self.draw_overlay = key_value[1].lower() == "true"
 
             print("class InstanceSegmentation initialized with the values from command line")
             print("ckpt_file", ckpt_file)
             print("fp16", fp16)
             print("simple", self.simple)
+            print("overlay", self.draw_overlay)
 
             if ckpt_file is not None:
                 if ckpt_file.lower() == "auto":
@@ -102,8 +108,8 @@ class InstanceSegmentation:
             classes = predictions.pred_classes.to(torch.device('cpu')).numpy()
             scores = predictions.scores.to(torch.device('cpu'))
             img_tensor = torch.from_numpy(img).to(torch.device('cuda'))
-            total_map = torch.zeros_like(img_tensor).to(torch.device('cuda'))
-            color = None
+            color_mask = torch.zeros_like(img_tensor).to(torch.device('cuda'))
+            composite_mask = torch.zeros_like(img_tensor).to(torch.device('cuda'))
 
             if self.simple:
 
@@ -127,36 +133,66 @@ class InstanceSegmentation:
                         blue_map = torch.zeros_like(mask, dtype=torch.uint8).to(torch.device('cuda'))
                         blue_map += mask * color[2]
 
-                        total_map += torch.stack((red_map, green_map, blue_map), 2)
+                        color_mask += torch.stack((red_map, green_map, blue_map), 2)
 
-                    img = total_map.to(torch.device('cpu')).numpy()
+                    img = color_mask.to(torch.device('cpu')).numpy()
             else:
                 bboxes = torch.column_stack((predictions.pred_boxes.to(torch.device('cpu')).tensor, scores))
+
+                indices = torch.from_numpy(np.where((classes == 0) | (classes == 2))[0])
+                bboxes = torch.index_select(bboxes, 0, indices)
+
                 if bboxes is not None:
                     targets = self.tracker.update(bboxes, [img.shape[0], img.shape[1]], (img.shape[0], img.shape[1]))
 
-                for t in targets:
-                    box = np.asarray(t.tlwh).astype(np.int32)
-                    box[2:] += box[:2]
-                    box = np.expand_dims(box, 0)
-                    iou = ops.box_iou(torch.from_numpy(box), predictions.pred_boxes.to(torch.device('cpu')).tensor)
-                    index = int(torch.argmax(iou).item())
+                if self.draw_overlay:
+                    colors = []
+                    for i in range(masks.size()[0]):
+                        colors.append((0, 0, 0))
 
-                    mask = masks[index].int()
+                    for t in targets:
+                        box = np.asarray(t.tlwh).astype(np.int32)
+                        box[2:] += box[:2]
+                        box = np.expand_dims(box, 0)
+                        iou = ops.box_iou(torch.from_numpy(box), predictions.pred_boxes.to(torch.device('cpu')).tensor)
+                        index = int(torch.argmax(iou).item())
 
-                    color = get_color(t.track_id)
+                        colors[index] = get_color(t.track_id)
 
-                    red_map = torch.zeros_like(mask, dtype=torch.uint8).to(torch.device('cuda'))
-                    red_map += mask * color[0]
-                    green_map = torch.zeros_like(mask, dtype=torch.uint8).to(torch.device('cuda'))
-                    green_map += mask * color[1]
-                    blue_map = torch.zeros_like(mask, dtype=torch.uint8).to(torch.device('cuda'))
-                    blue_map += mask * color[2]
+                    masks.to(torch.device('cpu'))
+                    img_tensor = torch.permute(torch.from_numpy(img), (2, 0, 1))
+                    img_tensor = utils.draw_segmentation_masks(img_tensor, masks, 0.5, colors)
+                    img = torch.permute(img_tensor, (1, 2, 0)).numpy()
 
-                    total_map += torch.stack((red_map, green_map, blue_map), 2)
+                else:
+                    colors = []
+                    track_ids = []
+                    for i in range(masks.size()[0]):
+                        colors.append((0, 0, 0))
+                        track_ids.append(0)
 
-                img = total_map.to(torch.device('cpu')).numpy()
+                    for t in targets:
+                        box = np.asarray(t.tlwh).astype(np.int32)
+                        box[2:] += box[:2]
+                        box = np.expand_dims(box, 0)
+                        iou = ops.box_iou(torch.from_numpy(box), predictions.pred_boxes.to(torch.device('cpu')).tensor)
+                        index = int(torch.argmax(iou).item())
 
+                        mask = masks[index].int()
+                        composite_mask += torch.stack((mask, mask, mask), 2)
+                        
+                        colors[index] = get_color(t.track_id)
+                        track_ids[index] = t.track_id
+
+                    composite_mask = torch.gt(composite_mask, 0.0)
+                    img_tensor *= composite_mask
+                    img = img_tensor.to(torch.device('cpu')).numpy()
+
+                    for idx, box in enumerate(bboxes):
+                        p1 = (int(box[0]), int(box[1]))
+                        p2 = (int(box[2]), int(box[3]))
+                        cv2.putText(img, str(track_ids[idx]), p1, cv2.FONT_HERSHEY_PLAIN, 1, colors[idx], 1)
+                        cv2.rectangle(img, p1, p2, colors[idx], 1)
 
             return img
 

@@ -14,7 +14,6 @@ from yolox.tracker.byte_tracker import BYTETracker
 from torchvision import ops
 
 # constants
-WINDOW_NAME = "COCO detections"
 CONFIDENCE_THRESHOLD = 0.50
 
 def get_color(idx):
