@@ -73,11 +73,12 @@ Installing ByteTrack
 --------------------
 
 The ByteTrack and YOLOX module can be added for detection and tracking.  It is 
-suggested to use mamba to speed up this install
+suggested to use mamba to speed up this install.  Install pytorch first.
 
 ```bash
 conda install mamba
-mamba install -c sr99622 -c pytorch yolox
+mamba install pytorch torchvision torchaudio cudatoolkit=11.6 -c pytorch -c nvidia
+mamba install -c sr99622 yolox
 ```
 
 A pretrained model is available for downloading to test the program.  The model
@@ -166,6 +167,14 @@ cd detectron2
 pip install .
 ```
 
+Detection, yeypoint and instance segmentation models are available for detectron2
+using the folowing commands
+
+```bash
+python play.py test.mp4 --vfilter format=bgr24 --detection ckpt_file=auto
+python play.py test.mp4 --vfilter format=bgr24 --keypoint ckpt_file=auto
+python play.py test.mp4 --vfilter format=bgr24 --segment ckpt_file=auto
+```
 
 Credits
 -------
@@ -196,6 +205,10 @@ detectron2 is borrowed from https://github.com/facebookresearch/detectron2
 
 A large part of the code is borrowed from [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX), [FairMOT](https://github.com/ifzhang/FairMOT), [TransTrack](https://github.com/PeizeSun/TransTrack) and [JDE-Cpp](https://github.com/samylee/Towards-Realtime-MOT-Cpp). Many thanks for their wonderful works.
 
+## License
+
+[LICENSE](https://github.com/ifzhang/ByteTrack/blob/main/LICENSE)
+
 ----------------------------------------------
 
 ## Cite YOLOX
@@ -219,6 +232,10 @@ It is hoped that every AI practitioner in the world will stick to the concept of
 孙剑博士的离去是CV领域的一大损失，我们在此特别添加了这个部分来表达对我们的“船长”孙老师的纪念和哀思。
 希望世界上的每个AI从业者秉持着“持续创新拓展认知边界，非凡科技成就产品价值”的观念，一路向前。
 
+## License
+
+[LICENSE](https://github.com/Megvii-BaseDetection/YOLOX/blob/main/LICENSE)
+
 -------------------------------------------------
 
 ## Citing Detectron2
@@ -234,4 +251,7 @@ If you use Detectron2 in your research or wish to refer to the baseline results 
   year =         {2019}
 }
 ```
+## License
+[LICENSE](https://github.com/facebookresearch/detectron2/blob/main/LICENSE)
 
+-------------------------------------------------

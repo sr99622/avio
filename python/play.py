@@ -68,9 +68,9 @@ class Player:
         if args.bytetrack:
             bytetrack = eval(args.bytetrack)
 
-        detectron2 = ""
-        if args.detectron2:
-            detectron2 = eval(args.detectron2)
+        detection = ""
+        if args.detection:
+            detection = eval(args.detection)
 
         segment = ""
         if args.segment:
@@ -223,9 +223,9 @@ class Player:
         if len(bytetrack) > 0:
             process.set_python(display, "./bytetrack/interface.py", "ByteTrack")
             process.set_python_init_arg(display, bytetrack)
-        if len(detectron2) > 0:
+        if len(detection) > 0:
             process.set_python(display, "./detectron2/detection.py", "Detection")
-            process.set_python_init_arg(display, detectron2)
+            process.set_python_init_arg(display, detection)
         if len(segment) > 0:
             process.set_python(display, "./detectron2/segment.py", "InstanceSegmentation")
             process.set_python_init_arg(display, segment)
@@ -260,9 +260,9 @@ if __name__ == "__main__":
     parser.add_argument("--echo", type=ascii, help="key1=value1,key1=value2")
     parser.add_argument("--db_read", type=ascii, help="db_name=track.db")
     parser.add_argument("--retinanet", help="RetinaNet", action="store_true")
-    parser.add_argument("--detectron2", type=ascii, help="key1=value1,key2=value2")
-    parser.add_argument("--segment", type=ascii, help='key1=value1,key2=value2')
-    parser.add_argument("--keypoint", type=ascii, help='key1=value1,key2=value2')
+    parser.add_argument("--detection", type=ascii, help="ckpt_file=auto,fp16=False,simple=False")
+    parser.add_argument("--segment", type=ascii, help='ckpt_file=auto,fp16=True,overlay=False,simple=False')
+    parser.add_argument("--keypoint", type=ascii, help='ckpt_file=auto,fp16=True,no_back=False,simple=False')
     parser.add_argument("--bytetrack", type=ascii, help="ckpt_file=bytetrack_l_mot17.pth.tar,fp16=True,force_cpu=True,trt_file=bytetrack_l_mot17_trt.pth")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int)
