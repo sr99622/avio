@@ -167,7 +167,7 @@ cd detectron2
 pip install .
 ```
 
-Detection, yeypoint and instance segmentation models are available for detectron2
+Detection, keypoint and instance segmentation models are available for detectron2
 using the folowing commands
 
 ```bash
