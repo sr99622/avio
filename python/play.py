@@ -140,6 +140,7 @@ class Player:
             display.set_video_in(videoFilter.video_out())
             process.add_decoder(videoDecoder)
             process.add_filter(videoFilter)
+            #reader.show_video_pkts = True
 
         if reader.has_audio() and show_audio:
             reader.set_audio_out("apq_reader")
@@ -155,6 +156,9 @@ class Player:
             display.audio_playback_format = avio.AV_SAMPLE_FMT_FLT
             process.add_decoder(audioDecoder)
             process.add_filter(audioFilter)
+            #audioDecoder.show_frames = True
+            #audioFilter.show_frames = True
+            #reader.show_audio_pkts = True
 
         if use_encoder:
             writer = avio.Writer(encode_type)
@@ -172,7 +176,6 @@ class Player:
                 videoEncoder.set_video_out("vpq_encoder")
                 #videoEncoder.frame_q_max_size = 200
                 #videoEncoder.show_frames = True
-
                 videoEncoder.pix_fmt = avio.AV_PIX_FMT_YUV420P
                 videoEncoder.width = videoFilter.width()
                 videoEncoder.height = videoFilter.height()

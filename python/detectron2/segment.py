@@ -124,7 +124,7 @@ class InstanceSegmentation:
                     for i in range(len(masks)):
                         mask = masks[i].int()
 
-                        color = (colors[i] * 160).astype(int)
+                        color = (colors[i] * 255).astype(int)
 
                         red_map = torch.zeros_like(mask, dtype=torch.uint8).to(torch.device('cuda'))
                         red_map += mask * color[0]

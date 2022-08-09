@@ -141,7 +141,7 @@ int Decoder::decode(AVPacket* pkt)
 
             f.m_frame->display_picture_number = dec_ctx->frame_number;  // not used
             f.set_rts(stream);
-            if (show_frames) std::cout << f.description() << std::endl;
+            if (show_frames) std::cout << "decoder " << f.description() << std::endl;
 
             frame_q->push(f);
         }

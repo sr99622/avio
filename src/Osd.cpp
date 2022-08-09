@@ -87,9 +87,13 @@ void Osd::build_status()
 
 void Osd::status_background(Frame& f) 
 {
-    panel_start_row = f.m_frame->height * 0.20f;
-    panel_stop_row = f.m_frame->height * 0.60f;
-    panel_stop_column = f.m_frame->linesize[0] * 0.30f;
+    panel_start_row = 0;
+
+    SDL_Point lblPyRuntime_text_size = lblPyRuntime->setText(lblPyRuntime_text);
+    panel_stop_row = 4 + lblPyRuntime_text_size.y;
+
+    panel_stop_column = f.m_frame->linesize[0];
+
     for (int y = panel_start_row; y < panel_stop_row; y++) {
         for (int x = 0; x < panel_stop_column; x++) {
             int i = y * f.m_frame->linesize[0] + x;
@@ -98,7 +102,7 @@ void Osd::status_background(Frame& f)
     }
 }
 
-void Osd::handle_status()
+void Osd::handle_status(Frame& f)
 {
     lblPyRuntime->font = font;
     SDL_Point lblPyRuntime_text_size = lblPyRuntime->setText(lblPyRuntime_text);
@@ -107,8 +111,8 @@ void Osd::handle_status()
 
     lblRTS->font = font;
     SDL_Point lblRTS_text_size = lblRTS->setText(lblRTS_text);
-    lblRTS->x = 16;
-    lblRTS->y = panel_start_row + lblPyRuntime_text_size.y;
+    lblRTS->x = 64 + lblPyRuntime_text_size.x;
+    lblRTS->y = panel_start_row;
 }
 
 void Osd::handleEvent(SDL_Event& e, Frame& f) 
@@ -164,7 +168,7 @@ void Osd::handleEvent(SDL_Event& e, Frame& f)
         btnPlay->width = btnRec->width * 0.5f;
         btnPlay->y = bar->y - (int)btnPlay_size.y / 2.0f + (int)bar->height / 2.0f;
 
-        if (status_enabled) handle_status();
+        if (status_enabled) handle_status(f);
 
         fade(f);
 

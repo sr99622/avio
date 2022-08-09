@@ -323,12 +323,15 @@ public:
             }
         }
 
+        //std::exit(0);
+
         for (int i = 0; i < ops.size(); i++) {
             ops[i]->join();
             delete ops[i];
         }
 
-        std::exit(0);
+        //std::exit(0);
+
     }
 };
 
@@ -436,6 +439,7 @@ PYBIND11_MODULE(avio, m)
         .def("audio_out", &Filter::audio_out)
         .def("set_audio_in", &Filter::set_audio_in)
         .def("set_audio_out", &Filter::set_audio_out)
+        .def_readwrite("show_frames", &Filter::show_frames)
         .def_readwrite("q_in_name", &Filter::q_in_name)
         .def_readwrite("q_out_name", &Filter::q_out_name);
     py::class_<Display>(m, "Display")

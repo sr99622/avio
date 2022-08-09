@@ -52,6 +52,8 @@ public:
 	std::string q_in_name;
 	std::string q_out_name;
 
+	bool show_frames = false;
+
 	std::string video_in() const { return std::string(q_in_name); }
 	std::string video_out() const { return std::string(q_out_name); }
 	std::string audio_in() const { return std::string(q_in_name); }

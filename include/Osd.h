@@ -23,7 +23,7 @@ public:
 	void fade(Frame& f);
 	void status_background(Frame& f);
 	void build_status();
-	void handle_status();
+	void handle_status(Frame& f);
 
 	bool heads_up = false;
 	bool pin_osd = false;

@@ -252,6 +252,7 @@ If you use Detectron2 in your research or wish to refer to the baseline results 
 }
 ```
 ## License
+
 [LICENSE](https://github.com/facebookresearch/detectron2/blob/main/LICENSE)
 
 -------------------------------------------------

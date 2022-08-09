@@ -272,6 +272,13 @@ bool Display::display()
                     break;
                 }
             }
+            if (single_step) {
+                if (afq_in) {
+                    while (afq_in->size() > 0) {
+                        afq_in->pop();
+                    }
+                }
+            }
         }
 
         try 

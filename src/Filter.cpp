@@ -140,6 +140,8 @@ void Filter::filter(const Frame& f)
 
             tmp = Frame(frame);
             tmp.m_rts = tmp.pts() * 1000 * av_q2d(av_buffersink_get_time_base(sink_ctx));
+            if (show_frames) std::cout << "filter " << f.description() << std::endl;
+
             frame_out_q->push(tmp);
             av_frame_unref(frame);
         }

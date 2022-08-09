@@ -52,8 +52,9 @@ static void read(Reader* reader, Queue<AVPacket*>* vpq, Queue<AVPacket*>* apq)
 
             if (pkt->stream_index == reader->video_stream_index) {
                 if (reader->show_video_pkts) show_pkt(pkt);
-                if (vpq)
+                if (vpq) {
                     vpq->push(pkt);
+                }
                 else
                     av_packet_free(&pkt);
             }
