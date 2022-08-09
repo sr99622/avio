@@ -73,7 +73,8 @@ Installing ByteTrack
 --------------------
 
 The ByteTrack and YOLOX module can be added for detection and tracking.  It is 
-suggested to use mamba to speed up this install.  Install pytorch first.
+suggested to use mamba to speed up this install.  Install pytorch first using the
+NVIDIA channel for the latest configuration.
 
 ```bash
 conda install mamba
