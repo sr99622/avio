@@ -470,7 +470,8 @@ PYBIND11_MODULE(avio, m)
         .def_readwrite("duration", &Display::duration)
         .def_readwrite("width", &Display::width)
         .def_readwrite("height", &Display::height)
-        .def_readwrite("pix_fmt", &Display::pix_fmt);
+        .def_readwrite("pix_fmt", &Display::pix_fmt)
+        .def_readwrite("fullscreen", &Display::fullscreen);
     py::class_<Writer>(m, "Writer")
         .def(py::init<const std::string&>())
         .def_readwrite("enabled", &Writer::enabled)

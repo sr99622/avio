@@ -103,6 +103,8 @@ public:
     std::string font_file;
     bool osd_enabled = true;
 
+    bool fullscreen = false;
+
     SDL_AudioDeviceID audioDeviceID;
     Clock rtClock;
 

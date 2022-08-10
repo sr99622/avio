@@ -61,6 +61,7 @@ int Display::initVideo(int width, int height, AVPixelFormat pix_fmt)
         int w = width;
         int h = height;
 
+
         switch (pix_fmt) {
         case AV_PIX_FMT_YUV420P:
         case AV_PIX_FMT_YUVJ420P:
@@ -100,8 +101,12 @@ int Display::initVideo(int width, int height, AVPixelFormat pix_fmt)
             window = SDL_CreateWindow("window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, 0);
             if (!window) throw Exception(std::string("SDL_CreateWindow") + SDL_GetError());
 
+            if (fullscreen) SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+
             renderer = SDL_CreateRenderer(window, -1, 0);
             if (!renderer) throw Exception(std::string("SDL_CreateRenderer") + SDL_GetError());
+
+            SDL_RenderSetLogicalSize(renderer, w, h);
 
             texture = SDL_CreateTexture(renderer, sdl_format, SDL_TEXTUREACCESS_STREAMING, w, h);
             if (!texture) throw Exception(std::string("SDL_CreateTexture") + SDL_GetError());
@@ -125,18 +130,22 @@ int Display::initVideo(int width, int height, AVPixelFormat pix_fmt)
             int window_width;
             int window_height;
             SDL_GetWindowSize(window, &window_width, &window_height);
-            if (!(window_width == w && window_height == h)) {
-                SDL_SetWindowSize(window, w, h);
-                SDL_DisplayMode DM;
-                SDL_GetCurrentDisplayMode(0, &DM);
-                auto Width = DM.w;
-                auto Height = DM.h;
-                int x = (Width - w) / 2;
-                int y = (Height - h) / 2;
-                SDL_SetWindowPosition(window, x, y);
-                if (texture)
-                    SDL_DestroyTexture(texture);
-                texture = SDL_CreateTexture(renderer, sdl_format, SDL_TEXTUREACCESS_STREAMING, w, h);
+            int flags = SDL_GetWindowFlags(window);
+            bool fullscreen = flags & SDL_WINDOW_FULLSCREEN;
+            if (!fullscreen) {
+                if (!(window_width == w && window_height == h)) {
+                    SDL_SetWindowSize(window, w, h);
+                    SDL_DisplayMode DM;
+                    SDL_GetCurrentDisplayMode(0, &DM);
+                    auto Width = DM.w;
+                    auto Height = DM.h;
+                    int x = (Width - w) / 2;
+                    int y = (Height - h) / 2;
+                    SDL_SetWindowPosition(window, x, y);
+                    if (texture)
+                        SDL_DestroyTexture(texture);
+                    texture = SDL_CreateTexture(renderer, sdl_format, SDL_TEXTUREACCESS_STREAMING, w, h);
+                }
             }
         }
     }

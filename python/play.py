@@ -40,6 +40,10 @@ class Player:
         if args.enable_status:
             enable_status = True
 
+        fullscreen = False
+        if args.fullscreen:
+            fullscreen = True
+
         hw_decode = False
         if args.hw_decode:
             hw_decode = True
@@ -120,6 +124,7 @@ class Player:
             display.enable_status(True)
         display.ignore_video_pts = ignore_video_pts
         display.prepend_recent_write = True
+        display.fullscreen = fullscreen
         #display.font_file = "/usr/share/fonts/liberation-serif/LiberationSerif-Bold.ttf"
         process = avio.Process()
         process.add_reader(reader)
@@ -270,6 +275,7 @@ if __name__ == "__main__":
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int)
     parser.add_argument("--end_at", type=int)
+    parser.add_argument("--fullscreen", help="fullscreen", action="store_true")
     args = parser.parse_args()
 
     player = Player()
