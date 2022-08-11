@@ -49,6 +49,7 @@ public:
 	Label* lblMark = nullptr;
 	ButtonRec* btnRec = nullptr;
 	ButtonPlay* btnPlay = nullptr;
+	ButtonJpeg* btnJpeg = nullptr;
 
 	int panel_start_row = -1;
 	int panel_stop_row = -1;

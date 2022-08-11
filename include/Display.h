@@ -47,6 +47,7 @@ public:
     void pin_osd(bool arg);
     void enable_status(bool arg);
     void clearInputQueues();
+    void snapshot();
     
     bool paused = false;
     bool user_paused = false;

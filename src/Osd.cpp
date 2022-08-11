@@ -18,6 +18,8 @@ Osd::Osd()
     widgets.push_back(btnRec);
     btnPlay = new ButtonPlay(this);
     widgets.push_back(btnPlay);
+    btnJpeg = new ButtonJpeg(this);
+    widgets.push_back(btnJpeg);
 
     build_status();
 }
@@ -167,6 +169,11 @@ void Osd::handleEvent(SDL_Event& e, Frame& f)
         btnPlay->x = btnRec->x + btnRec_size.x + 16;
         btnPlay->width = btnRec->width * 0.5f;
         btnPlay->y = bar->y - (int)btnPlay_size.y / 2.0f + (int)bar->height / 2.0f;
+
+        btnJpeg->font = font;
+        SDL_Point btnJpeg_size = btnJpeg->setText("JPG");
+        btnJpeg->x = btnPlay->x + btnPlay_size.x + 24;
+        btnJpeg->y = bar->y - (int)btnJpeg_size.y / 2.0f + (int)bar->height / 2.0f;
 
         if (status_enabled) handle_status(f);
 

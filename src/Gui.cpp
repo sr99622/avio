@@ -87,6 +87,36 @@ void ButtonPlay::handleEvent(const SDL_Event& e)
 	}
 }
 
+void ButtonJpeg::render(SDL_Renderer* renderer)
+{
+	if (!visible) return;
+	texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect = { x, y, width, height };
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	rect.w += 8;
+	rect.x -= 4;
+	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
+	SDL_RenderDrawRect(renderer, &rect);
+}
+
+void ButtonJpeg::handleEvent(const SDL_Event& e)
+{
+	text = "JPG";
+	color = (hovering(e) ? color_hi : color_lo);
+
+	surface = TTF_RenderText_Blended(font, text.c_str(), color);
+	if (hovering(e)) {
+		if (e.type == SDL_MOUSEBUTTONDOWN) {
+			if (e.button.button == SDL_BUTTON_LEFT) {
+				Display* display = (Display*)((Osd*)osd)->display;
+				display->snapshot();
+				//hot = !hot;
+			}
+		}
+	}
+}
+
 void ProgressBar::handleEvent(const SDL_Event& e)
 {
 	color = (hovering(e) ? color_hi : color_lo);

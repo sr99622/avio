@@ -127,12 +127,10 @@ int Display::initVideo(int width, int height, AVPixelFormat pix_fmt)
             }
         }
         else {
-            int window_width;
-            int window_height;
-            SDL_GetWindowSize(window, &window_width, &window_height);
-            int flags = SDL_GetWindowFlags(window);
-            bool fullscreen = flags & SDL_WINDOW_FULLSCREEN;
-            if (!fullscreen) {
+            if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN)) {
+                int window_width;
+                int window_height;
+                SDL_GetWindowSize(window, &window_width, &window_height);
                 if (!(window_width == w && window_height == h)) {
                     SDL_SetWindowSize(window, w, h);
                     SDL_DisplayMode DM;
@@ -241,6 +239,9 @@ PlayState Display::getEvents(std::vector<SDL_Event>* events)
             }
             else if (event.key.keysym.sym == SDLK_r) {
                 key_record_flag = true;
+            }
+            else if (event.key.keysym.sym == SDLK_j) {
+                snapshot();
             }
         }
     }
@@ -554,7 +555,6 @@ void Display::togglePause()
     rtClock.pause(paused);
     user_paused = paused;
     osd.btnPlay->hot = paused;
-    //if (SDL_WasInit(SDL_INIT_AUDIO) && fix_audio_pop) SDL_PauseAudioDevice(audioDeviceID, paused);
 }
 
 void Display::toggleRecord()
@@ -644,6 +644,60 @@ const char* Display::sdlAudioFormatName(SDL_AudioFormat format) const
         break;
     default:
         return "UNKNOWN";
+    }
+}
+
+void Display::snapshot()
+{
+    std::cout << "Display::snapshot" << std::endl;
+
+    AVCodecContext* codec_ctx = NULL;
+    AVFormatContext* fmt_ctx = NULL;
+    AVStream* stream = NULL;
+    AVCodec* codec = NULL;
+
+    try {
+        const char* out_name = "filename.jpg";
+        int width = f.m_frame->width;
+        int height = f.m_frame->height;
+
+        ex.ck(fmt_ctx = avformat_alloc_context(), AAC);
+        fmt_ctx->oformat = av_guess_format("mjpeg", NULL, NULL);
+
+        ex.ck(avio_open(&fmt_ctx->pb, out_name, AVIO_FLAG_READ_WRITE), AO);
+        ex.ck(stream = avformat_new_stream(fmt_ctx, 0), ANS);
+
+        AVCodecParameters *parameters = stream->codecpar;
+        parameters->codec_id = fmt_ctx->oformat->video_codec;
+        parameters->codec_type = AVMEDIA_TYPE_VIDEO;
+        parameters->format = AV_PIX_FMT_YUVJ420P;
+        parameters->width = width;
+        parameters->height = height;
+
+        ex.ck(codec = avcodec_find_encoder(stream->codecpar->codec_id), AFE);
+        ex.ck(codec_ctx = avcodec_alloc_context3(codec), AAC3);
+        ex.ck(avcodec_parameters_to_context(codec_ctx, stream->codecpar), APTC);
+        codec_ctx->time_base = (AVRational) {1, 25};
+        ex.ck(avcodec_open2(codec_ctx, codec, NULL), AO2);
+        ex.ck(avformat_write_header(fmt_ctx, NULL), AWH);
+
+        AVPacket pkt;
+        av_new_packet(&pkt, width * height * 3);
+
+        ex.ck(avcodec_send_frame(codec_ctx, f.m_frame), ASF);
+        ex.ck(avcodec_receive_packet(codec_ctx, &pkt), ARP);
+        ex.ck(av_write_frame(fmt_ctx, &pkt), AWF);
+        av_packet_unref(&pkt);
+        ex.ck(av_write_trailer(fmt_ctx), AWT);
+    }    
+    catch (Exception& e) {
+        std::cout << "Display::snapshot exception: " << e.what() << std::endl;
+    }    
+
+    if (codec_ctx) avcodec_close(codec_ctx);
+    if (fmt_ctx) {
+        avio_close(fmt_ctx->pb);
+        avformat_free_context(fmt_ctx);
     }
 }
 

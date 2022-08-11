@@ -102,6 +102,19 @@ public:
 	bool hot = false;
 };
 
+class ButtonJpeg : public Label
+{
+public:
+	ButtonJpeg(void* hud) : Label(hud) {}
+	void handleEvent(const SDL_Event& e) override;
+	void render(SDL_Renderer* renderer) override;
+	SDL_Color color = { 0 };
+	SDL_Color hot_color_lo = { 178, 0, 0 };
+	SDL_Color hot_color_hi = { 255, 0, 0 };
+	int last_click_x = -1;
+	bool hot = false;
+};
+
 class ProgressBar : public Widget
 {
 public:
