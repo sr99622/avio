@@ -3,6 +3,9 @@ extern "C"
 #include <libavutil/channel_layout.h>
 }
 
+#include <iomanip>
+#include <filesystem>
+
 #include "Reader.h"
 #include "Decoder.h"
 
@@ -22,6 +25,8 @@ Reader::Reader(const char* filename)
         if (audio_stream_index < 0) 
             ex.msg("av_find_best_stream could not find audio stream", MsgPriority::INFO);
 
+        std::filesystem::path path = filename;
+        extension = path.extension();
     }
     catch (const Exception& e) {
         std::stringstream str; str << "Reader was unable to open " << filename << " : ";
@@ -306,6 +311,27 @@ AVRational Reader::audio_time_base()
     if (audio_stream_index >= 0)
         result = fmt_ctx->streams[audio_stream_index]->time_base;
     return result;
+}
+
+std::string Reader::get_pipe_out_filename()
+{
+    std::string filename;
+
+    if (pipe_out_filename.empty()) {
+        std::time_t t = std::time(nullptr);
+        std::tm tm = *std::localtime(&t);
+        std::stringstream str;
+        str << std::put_time(&tm, "%y%m%d%H%M%S");
+        filename = str.str() + extension;
+    }
+    else {
+        filename = pipe_out_filename;
+    }
+
+    if (!pipe_out_dir.empty())
+        filename = pipe_out_dir + "/" + filename;
+
+    return filename;
 }
 
 }

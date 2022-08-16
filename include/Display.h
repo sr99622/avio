@@ -103,6 +103,7 @@ public:
     Osd osd;
     std::string font_file;
     bool osd_enabled = true;
+    bool jpg_enabled = false;
 
     bool fullscreen = false;
 

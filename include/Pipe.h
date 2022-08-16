@@ -23,12 +23,13 @@ namespace avio
 class Pipe
 {
 public:
-    Pipe(Reader& reader, const std::string& filename);
+    Pipe(Reader& reader);
     ~Pipe();
 
     AVCodecContext* getContext(AVMediaType mediaType);
-    void open();
+    void open(const std::string& filename);
     void close();
+    void adjust_pts(AVPacket* pkt);
     void write(AVPacket* pkt);
 
     std::string m_filename;
@@ -40,13 +41,16 @@ public:
     AVStream* video_stream = NULL;
     AVStream* audio_stream = NULL;
 
+    int64_t video_next_pts = 0;
+    int64_t audio_next_pts = 0;
+
     std::mutex mutex;
 
-    std::string vpq_name;
-    std::string apq_name;
+    //std::string vpq_name;
+    //std::string apq_name;
 
-    void set_video_in(const std::string& name) { vpq_name = std::string(name); }
-    void set_audio_in(const std::string& name) { apq_name = std::string(name); }
+    //void set_video_in(const std::string& name) { vpq_name = std::string(name); }
+    //void set_audio_in(const std::string& name) { apq_name = std::string(name); }
 
     ExceptionHandler ex;
 

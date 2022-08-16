@@ -28,41 +28,13 @@ class Player:
         if args.no_audio:
             show_audio = False
 
-        pin_osd = False
-        if args.pin_osd:
-            pin_osd = True
-
-        disable_hud = False
-        if args.disable_hud:
-            disable_hud = True
-        
-        enable_status = False
-        if args.enable_status:
-            enable_status = True
-
-        fullscreen = False
-        if args.fullscreen:
-            fullscreen = True
-
-        hw_decode = False
-        if args.hw_decode:
-            hw_decode = True
-
         use_encoder = False
         if args.encode or args.hw_encode:
             use_encoder = True
 
-        use_hw_encode = False
-        if args.hw_encode:
-            use_hw_encode = True
-
         encode_type = "mp4"
         if args.encode_type:
             encode_type = args.encode_type
-
-        write_enable = False
-        if args.write_enable:
-            write_enable = True
 
         retinanet = False
         if args.retinanet:
@@ -104,10 +76,6 @@ class Player:
         if args.end_at:
             end_at = args.end_at
 
-        ignore_video_pts = False
-        if args.ignore_video_pts:
-            ignore_video_pts = True
-
         print(filename)
         reader = avio.Reader(filename)
         reader.start_from(start_from)
@@ -115,25 +83,37 @@ class Player:
             reader.end_at(end_at)
         #reader.show_video_pkts = True
 
+        if args.pipe_out:
+            reader.pipe_out = True
+            if args.output_filename:
+                reader.pipe_out_filename = eval(args.output_filename)
+            if args.output_dir:
+                reader.pipe_out_dir = eval(args.output_dir)
+
         display = avio.Display(reader)
-        if pin_osd:
+        if args.pin_osd:
             display.pin_osd(True)
-        if disable_hud:
+        if args.disable_hud:
             display.osd_enabled = False
-        if enable_status:
+        if args.enable_status:
             display.enable_status(True)
-        display.ignore_video_pts = ignore_video_pts
-        display.prepend_recent_write = True
-        display.fullscreen = fullscreen
-        #display.font_file = "/usr/share/fonts/liberation-serif/LiberationSerif-Bold.ttf"
+        if args.ignore_video_pts:
+            display.ignore_video_pts = True
+        #if args.prepend_recent_write:
+        #    display.prepend_recent_write = True
+        if args.fullscreen:
+            display.fullscreen = True
+        if args.jpg_enabled:
+            display.jpg_enabled = True
+
         process = avio.Process()
         process.add_reader(reader)
 
         if reader.has_video() and show_video:
             reader.set_video_out("vpq_reader")
             #if filename == "pipe:":
-            reader.vpq_max_size = 100
-            if hw_decode:
+            reader.vpq_max_size = 1
+            if args.hw_decode:
                 videoDecoder = avio.Decoder(reader, avio.AVMEDIA_TYPE_VIDEO, avio.AV_HWDEVICE_TYPE_CUDA)
             else:
                 videoDecoder = avio.Decoder(reader, avio.AVMEDIA_TYPE_VIDEO)
@@ -150,7 +130,7 @@ class Player:
         if reader.has_audio() and show_audio:
             reader.set_audio_out("apq_reader")
             #if filename == "pipe:":
-            reader.apq_max_size = 100
+            reader.apq_max_size = 1
             audioDecoder = avio.Decoder(reader, avio.AVMEDIA_TYPE_AUDIO)
             audioDecoder.set_audio_in(reader.audio_out())
             audioDecoder.set_audio_out("afq_decoder")
@@ -171,7 +151,7 @@ class Player:
                 writer.filename = eval(args.output_filename)
             if args.output_dir:
                 writer.write_dir = eval(args.output_dir)
-            if write_enable:
+            if args.write_enable:
                 writer.enabled = True
 
             if reader.has_video() and show_video:
@@ -193,7 +173,7 @@ class Player:
                 videoEncoder.gop_size = 30
                 #videoEncoder.profile = "high"
                 #videoEncoder.show_frames = True
-                if use_hw_encode:
+                if args.hw_encode:
                     videoEncoder.hw_video_codec_name = "h264_nvenc"
                     videoEncoder.hw_device_type = avio.AV_HWDEVICE_TYPE_CUDA
                     videoEncoder.hw_pix_fmt = avio.AV_PIX_FMT_CUDA
@@ -249,7 +229,7 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=UserWarning)
 
     parser = argparse.ArgumentParser(description="process media")
-    parser.add_argument("filename", metavar="Filename", type=ascii, nargs="+", help="enter axis (x or y)")
+    parser.add_argument("filename", metavar="Filename", type=ascii, nargs="+", help="media filename")
     parser.add_argument("--vfilter", type=ascii)
     parser.add_argument("--afilter", type=ascii)
     parser.add_argument("--no_video", help="no video", action="store_true")
@@ -260,7 +240,8 @@ if __name__ == "__main__":
     parser.add_argument("--hw_decode", help="hw_decode", action="store_true")
     parser.add_argument("--encode", help="encode", action="store_true")
     parser.add_argument("--hw_encode", help="hw_encode", action="store_true")
-    parser.add_argument("--encode_type", type=ascii)
+    parser.add_argument("--pipe_out", help="enable pipe out for recording", action="store_true")
+    parser.add_argument("--encode_type", type=ascii, help="encoder format name e.g. webm, mp4, avi, ...")
     parser.add_argument("--output_filename", type=ascii)
     parser.add_argument("--output_dir", type=ascii)
     parser.add_argument("--write_enable", help="write_enable", action="store_true")
@@ -273,9 +254,10 @@ if __name__ == "__main__":
     parser.add_argument("--keypoint", type=ascii, help='ckpt_file=auto,fp16=True,no_back=False,simple=False')
     parser.add_argument("--bytetrack", type=ascii, help="ckpt_file=bytetrack_l_mot17.pth.tar,fp16=True,force_cpu=True,trt_file=bytetrack_l_mot17_trt.pth")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
-    parser.add_argument("--start_from", type=int)
-    parser.add_argument("--end_at", type=int)
+    parser.add_argument("--start_from", type=int, help="start the video at time in seconds")
+    parser.add_argument("--end_at", type=int, help="stop the video at time in seconds")
     parser.add_argument("--fullscreen", help="fullscreen", action="store_true")
+    parser.add_argument("--jpg_enabled", help="enable jpg", action="store_true")
     args = parser.parse_args()
 
     player = Player()

@@ -299,6 +299,8 @@ int Encoder::encode(Frame& f)
             */
 
             writer->write(tmp);
+
+            // are we missing av_packet_free?
         }
     }
     catch (const Exception& e) {

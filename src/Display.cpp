@@ -12,6 +12,23 @@ void Display::init()
         osd.writer = writer;
         osd.display = this;
         
+
+        if (writer) {
+            osd.btnRec->visible = true;
+            if (writer->enabled)
+                osd.btnRec->hot = true;
+        }
+        else {
+            if (reader->pipe_out || reader->pipe_out_enabled) 
+                osd.btnRec->visible = true;
+            else 
+                osd.btnRec->visible = false;
+
+            if (reader->pipe_out_enabled) 
+                osd.btnRec->hot = true;
+        }
+
+        /*
         if (!writer) {
             osd.btnRec->visible = false;
         }
@@ -19,6 +36,12 @@ void Display::init()
             if (writer->enabled)
                 osd.btnRec->hot = true;
         }
+        */
+
+        if (jpg_enabled)
+            osd.btnJpeg->visible = true;
+        else
+            osd.btnJpeg->visible = false;
 
         if (font_file.empty()) {
             CPyObject mod = PyImport_ImportModule("avio");
@@ -242,6 +265,9 @@ PlayState Display::getEvents(std::vector<SDL_Event>* events)
             }
             else if (event.key.keysym.sym == SDLK_j) {
                 snapshot();
+            }
+            else if (event.key.keysym.sym == SDLK_o) {
+                reader->request_pipe_write = !reader->request_pipe_write;
             }
         }
     }
@@ -559,19 +585,25 @@ void Display::togglePause()
 
 void Display::toggleRecord()
 {
-    if (!writer) {
+    if (!writer && !reader->pipe_out) {
         std::cout << "Error: no writer specified" << std::endl;
         return;
     }
 
     recording = !recording;
 
-    if (prepend_recent_write && recording) {
-        for (int i = 0; i < recent.size() - 1; i++)
-            vfq_out->push(recent[i]);
+    if (writer) {
+        if (prepend_recent_write && recording) {
+            for (int i = 0; i < recent.size() - 1; i++)
+                vfq_out->push(recent[i]);
+        }
+
+        writer->enabled = recording;
+    }
+    else if (reader->pipe_out) {
+        reader->request_pipe_write = recording;
     }
 
-    writer->enabled = recording;
     osd.btnRec->hot = recording;
 }
 

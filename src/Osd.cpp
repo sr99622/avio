@@ -159,20 +159,20 @@ void Osd::handleEvent(SDL_Event& e, Frame& f)
         lblTime->x = bar->x - text_size.x - lblTime->border.right - bar->border.left;
         lblTime->y = bar->y - (int) text_size.y / 2.0f + (int) bar->height / 2.0f;
 
-        btnRec->font = font;
-        SDL_Point btnRec_size = btnRec->setText("Rec");
-        btnRec->x = bar->x + bar->width + 16;
-        btnRec->y = bar->y - (int)btnRec_size.y / 2.0f + (int)bar->height / 2.0f;
-
         btnPlay->font = font;
         SDL_Point btnPlay_size = btnPlay->setText("||");
-        btnPlay->x = btnRec->x + btnRec_size.x + 16;
+        btnPlay->x = bar->x + bar->width + 16;
         btnPlay->width = btnRec->width * 0.5f;
         btnPlay->y = bar->y - (int)btnPlay_size.y / 2.0f + (int)bar->height / 2.0f;
 
+        btnRec->font = font;
+        SDL_Point btnRec_size = btnRec->setText("Rec");
+        btnRec->x = btnPlay->x + btnPlay->width + 16;
+        btnRec->y = bar->y - (int)btnRec_size.y / 2.0f + (int)bar->height / 2.0f;
+
         btnJpeg->font = font;
         SDL_Point btnJpeg_size = btnJpeg->setText("JPG");
-        btnJpeg->x = btnPlay->x + btnPlay_size.x + 24;
+        btnJpeg->x = btnRec->x + btnRec->width + 16;
         btnJpeg->y = bar->y - (int)btnJpeg_size.y / 2.0f + (int)bar->height / 2.0f;
 
         if (status_enabled) handle_status(f);

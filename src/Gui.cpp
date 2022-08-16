@@ -41,6 +41,7 @@ void ButtonRec::render(SDL_Renderer* renderer)
 
 void ButtonRec::handleEvent(const SDL_Event& e)
 {
+	if (!visible) return;
 	surface = TTF_RenderText_Blended(font, text.c_str(), color);
 	if (hovering(e)) {
 		if (e.type == SDL_MOUSEBUTTONDOWN) {
@@ -72,6 +73,7 @@ void ButtonPlay::render(SDL_Renderer* renderer)
 
 void ButtonPlay::handleEvent(const SDL_Event& e)
 {
+	if (!visible) return;
 	text = (hot) ? ">" : "||";
 	color = (hovering(e) ? color_hi : color_lo);
 
@@ -102,6 +104,7 @@ void ButtonJpeg::render(SDL_Renderer* renderer)
 
 void ButtonJpeg::handleEvent(const SDL_Event& e)
 {
+	if (!visible) return;
 	text = "JPG";
 	color = (hovering(e) ? color_hi : color_lo);
 

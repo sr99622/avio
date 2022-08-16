@@ -30,9 +30,48 @@ static void read(Reader* reader, Queue<AVPacket*>* vpq, Queue<AVPacket*>* apq)
     if (reader->vpq_max_size > 0) vpq->set_max_size(reader->vpq_max_size);
     if (reader->apq_max_size > 0) apq->set_max_size(reader->apq_max_size);
 
+    std::deque<AVPacket*> pkts;
+    Pipe* pipe = nullptr;
+
     try {
         while (AVPacket* pkt = reader->read())
         {
+
+            if (reader->request_pipe_write) {
+                if (!pipe) {
+                    pipe = new Pipe(*reader);
+                    std::string filename = reader->get_pipe_out_filename();
+                    pipe->open(filename);
+                    while (pkts.size() > 0) {
+                        AVPacket* tmp = pkts.front();
+                        pkts.pop_front();
+                        pipe->write(tmp);
+                        av_packet_free(&tmp);
+                    }
+                }
+                AVPacket* tmp = av_packet_clone(pkt);
+                pipe->write(tmp);
+                av_packet_free(&tmp);
+            }
+            else {
+                if (pipe) {
+                    pipe->close();
+                    delete pipe;
+                    pipe = nullptr;
+                }
+                if (pkt->stream_index == reader->video_stream_index) {
+                    if (pkt->flags) {
+                        while (pkts.size() > 0) {
+                            AVPacket* tmp = pkts.front();
+                            pkts.pop_front();
+                            av_packet_free(&tmp);
+                        }
+                    }
+                }
+                AVPacket* tmp = av_packet_clone(pkt);
+                pkts.push_back(tmp);
+            }
+
             if (reader->seek_target_pts != AV_NOPTS_VALUE) {
                 av_packet_free(&pkt);
                 pkt = reader->seek();

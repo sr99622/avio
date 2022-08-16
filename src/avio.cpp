@@ -55,10 +55,8 @@ public:
         Reader reader(in.c_str());
         if (start > 0) reader.start_from(start);
         if (end > 0) reader.end_at(end);
-        Pipe pipe(reader, out.c_str());
-        if (reader.has_video()) pipe.set_video_in("dummy");
-        if (reader.has_audio()) pipe.set_audio_in("dummy");
-        pipe.open();
+        Pipe pipe(reader);
+        pipe.open(out.c_str());
 
         while (AVPacket* pkt = reader.read()) {
 
@@ -77,18 +75,6 @@ public:
                 }
             }
 
-            if (pkt->stream_index == reader.video_stream_index) {
-                pkt->stream_index = pipe.video_stream->index;
-                pkt->dts = pkt->pts = video_next_pts;
-                video_next_pts += pkt->duration;
-            }
-
-            else if (pkt->stream_index == reader.audio_stream_index) {
-                pkt->stream_index = pipe.audio_stream->index;
-                pkt->dts = pkt->pts = audio_next_pts;
-                audio_next_pts += pkt->duration;
-            }
-            
             pipe.write(pkt);
             av_packet_free(&pkt);
 
@@ -107,25 +93,11 @@ public:
             Reader reader(filename.c_str());
             std::cout << "merging " << filename << " into " << out_filename << std::endl;
             if (!pipe) {
-                pipe = new Pipe(reader, out_filename);
-                if (reader.has_video()) pipe->set_video_in("dummy");
-                if (reader.has_audio()) pipe->set_audio_in("dummy");
-                pipe->open();
+                pipe = new Pipe(reader);
+                pipe->open(out_filename);
             }
 
             while (AVPacket* pkt = reader.read()) {
-
-                if (pkt->stream_index == reader.video_stream_index) {
-                    pkt->stream_index = pipe->video_stream->index;
-                    pkt->dts = pkt->pts = video_next_pts;
-                    video_next_pts += pkt->duration;
-                }
-                else if (pkt->stream_index == reader.audio_stream_index) {
-                    pkt->stream_index = pipe->audio_stream->index;
-                    pkt->dts = pkt->pts = audio_next_pts;
-                    audio_next_pts += pkt->duration;
-                }
-
                 pipe->write(pkt);
                 av_packet_free(&pkt);
             }
@@ -387,6 +359,9 @@ PYBIND11_MODULE(avio, m)
         .def("request_seek", &Reader::request_seek)
         .def("start_from", &Reader::start_from)
         .def("end_at", &Reader::end_at)
+        .def_readwrite("pipe_out", &Reader::pipe_out)
+        .def_readwrite("pipe_out_filename", &Reader::pipe_out_filename)
+        .def_readwrite("pipe_out_dir", &Reader::pipe_out_dir)
         .def_readwrite("vpq_max_size", &Reader::vpq_max_size)
         .def_readwrite("apq_max_size", &Reader::apq_max_size)
         .def_readwrite("show_video_pkts", &Reader::show_video_pkts)
@@ -462,6 +437,7 @@ PYBIND11_MODULE(avio, m)
         .def_readwrite("audio_playback_format", &Display::sdl_sample_format)
         .def_readwrite("disable_audio", &Display::disable_audio)
         .def_readwrite("osd_enabled", &Display::osd_enabled)
+        .def_readwrite("jpg_enabled", &Display::jpg_enabled)
         .def_readwrite("ignore_video_pts", &Display::ignore_video_pts)
         .def_readwrite("recent_q_size", &Display::recent_q_size)
         .def_readwrite("prepend_recent_write", &Display::prepend_recent_write)
@@ -480,11 +456,7 @@ PYBIND11_MODULE(avio, m)
         .def_readwrite("show_video_pkts", &Writer::show_video_pkts)
         .def_readwrite("show_audio_pkts", &Writer::show_audio_pkts);
     py::class_<Pipe>(m, "Pipe")
-        .def(py::init<Reader&, const std::string&>())
-        .def("set_video_in", &Pipe::set_video_in)
-        .def("set_audio_in", &Pipe::set_audio_in)
-        .def_readwrite("vpq_name", &Pipe::vpq_name)
-        .def_readwrite("apq_name", &Pipe::apq_name);
+        .def(py::init<Reader&>());
     py::class_<Encoder>(m, "Encoder")
         .def(py::init<Writer&, AVMediaType>())
         .def("video_in", &Encoder::video_in)
