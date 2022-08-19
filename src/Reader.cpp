@@ -26,7 +26,7 @@ Reader::Reader(const char* filename)
             ex.msg("av_find_best_stream could not find audio stream", MsgPriority::INFO);
 
         std::filesystem::path path = filename;
-        extension = path.extension();
+        extension = path.extension().string();
     }
     catch (const Exception& e) {
         std::stringstream str; str << "Reader was unable to open " << filename << " : ";

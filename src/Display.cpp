@@ -696,10 +696,10 @@ void Display::snapshot()
         parameters->width = width;
         parameters->height = height;
 
-        ex.ck(codec = avcodec_find_encoder(stream->codecpar->codec_id), AFE);
+        ex.ck(codec = (AVCodec *)avcodec_find_encoder(stream->codecpar->codec_id), AFE);
         ex.ck(codec_ctx = avcodec_alloc_context3(codec), AAC3);
         ex.ck(avcodec_parameters_to_context(codec_ctx, stream->codecpar), APTC);
-        codec_ctx->time_base = (AVRational) {1, 25};
+        codec_ctx->time_base = av_make_q(1, 25);
         ex.ck(avcodec_open2(codec_ctx, codec, NULL), AO2);
         ex.ck(avformat_write_header(fmt_ctx, NULL), AWH);
 
