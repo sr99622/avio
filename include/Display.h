@@ -37,7 +37,7 @@ public:
     ~Display();
 
     void init();
-    int initAudio(int sample_rate, AVSampleFormat sample_fmt, int channels, uint64_t channel_layout, int stream_nb_sampples);
+    int initAudio(int sample_rate, AVSampleFormat sample_fmt, int channels, uint64_t channel_layout, int stream_nb_samples);
     int initVideo(int width, int height, AVPixelFormat pix_fmt);
     static void AudioCallback(void* userdata, uint8_t* stream, int len);
     void videoPresentation();

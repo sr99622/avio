@@ -41,9 +41,16 @@ Decoder::Decoder(Reader& reader, AVMediaType mediaType, AVHWDeviceType hw_device
 
         ex.ck(dec_ctx = avcodec_alloc_context3(dec), AAC3);
         ex.ck(avcodec_parameters_to_context(dec_ctx, stream->codecpar), APTC);
-        if (dec_ctx->pix_fmt == AV_PIX_FMT_YUVJ420P) {
-            std::cout << strMediaType << " Decoder: deprecated yuvj420p pixel format switched to yuv420p for compatibility" << std::endl;
-            dec_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
+
+        if (mediaType == AVMEDIA_TYPE_VIDEO && dec_ctx->pix_fmt != AV_PIX_FMT_YUV420P) {
+            std::cout << "creating format converter" << std::endl;
+            ex.ck(sws_ctx = sws_getContext(dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
+                dec_ctx->width, dec_ctx->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL), SGC);
+            cvt_frame = av_frame_alloc();
+            cvt_frame->width = dec_ctx->width;
+            cvt_frame->height = dec_ctx->height;
+            cvt_frame->format = AV_PIX_FMT_YUV420P;
+            av_frame_get_buffer(cvt_frame, 0);
         }
 
         ex.ck(frame = av_frame_alloc(), AFA);
@@ -108,7 +115,6 @@ void Decoder::close()
 int Decoder::decode(AVPacket* pkt)
 {
     int ret = 0;
-
     try 
     {
         if (!dec_ctx) throw Exception("dec_ctx null");
@@ -136,13 +142,19 @@ int Decoder::decode(AVPacket* pkt)
                 f = Frame(cvt_frame);
             }
             else {
-                f = Frame(frame);
+                if (sws_ctx) {
+                    ex.ck(sws_scale(sws_ctx, frame->data, frame->linesize, 0, dec_ctx->height,
+                        cvt_frame->data, cvt_frame->linesize), SS);
+                    f = Frame(cvt_frame);
+                }
+                else {
+                    f = Frame(frame);
+                }
             }
 
-            f.m_frame->display_picture_number = dec_ctx->frame_number;  // not used
+            //f.m_frame->display_picture_number = dec_ctx->frame_number;  // not used
             f.set_rts(stream);
-            if (show_frames) std::cout << "decoder " << f.description() << std::endl;
-
+            if (show_frames) std::cout << strMediaType << " decoder " << f.description() << std::endl;
             frame_q->push(f);
         }
     }
@@ -151,10 +163,8 @@ int Decoder::decode(AVPacket* pkt)
         ret = -1;
     }
 
-
     return ret;
 }
 
 
 }
-

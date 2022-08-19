@@ -81,7 +81,6 @@ class Player:
         reader.start_from(start_from)
         if end_at > 0:
             reader.end_at(end_at)
-        #reader.show_video_pkts = True
 
         if args.pipe_out:
             reader.pipe_out = True
@@ -138,6 +137,7 @@ class Player:
             audioFilter.set_audio_in(audioDecoder.audio_out())
             audioFilter.set_audio_out("afq_filter")
             display.set_audio_in(audioFilter.audio_out())
+            #display.set_audio_in(audioDecoder.audio_out())
             display.audio_playback_format = avio.AV_SAMPLE_FMT_FLT
             process.add_decoder(audioDecoder)
             process.add_filter(audioFilter)

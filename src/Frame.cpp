@@ -1,5 +1,4 @@
 #include "Frame.h"
-#include <sstream>
 
 namespace avio
 {
@@ -113,6 +112,7 @@ AVFrame* Frame::copyFrame(AVFrame* src)
 	dst->channel_layout = src->channel_layout;
 	dst->sample_rate = src->sample_rate;
 	dst->nb_samples = src->nb_samples;
+	dst->channels = src->channels;
 	dst->width = src->width;
 	dst->height = src->height;
 	av_frame_get_buffer(dst, 0);
@@ -129,7 +129,7 @@ AVMediaType Frame::mediaType() const
 	if (isValid()) {
 		if (m_frame->width > 0 && m_frame->height > 0)
 			result = AVMEDIA_TYPE_VIDEO;
-		else if (m_frame->nb_samples > 0 && m_frame->channels > 0)
+		else if (m_frame->nb_samples > 0 && m_frame->sample_rate > 0)
 			result = AVMEDIA_TYPE_AUDIO;
 	}
 	return result;
@@ -153,6 +153,7 @@ std::string Frame::description() const
 				<< ", format: " << (sample_fmt_name ? sample_fmt_name : "unknown sample format")
 				<< ", sample_rate: " << m_frame->sample_rate
 				<< ", channel_layout: " << buf 
+				<< ", extended_data: " << (m_frame->extended_data[0] ? "yes" : "no")
 				<< ", pts: " << m_frame->pts << ", m_rts: " << m_rts;
 		}
 		else {

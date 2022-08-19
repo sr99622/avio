@@ -28,16 +28,6 @@ void Display::init()
                 osd.btnRec->hot = true;
         }
 
-        /*
-        if (!writer) {
-            osd.btnRec->visible = false;
-        }
-        else {
-            if (writer->enabled)
-                osd.btnRec->hot = true;
-        }
-        */
-
         if (jpg_enabled)
             osd.btnJpeg->visible = true;
         else
@@ -51,14 +41,10 @@ void Display::init()
             font_file = dir.string();
         }
 
-        if (audioFilter) {
-            std::cout << "configure filter" << std::endl;
+        if (audioFilter)
             initAudio(audioFilter->sample_rate(), audioFilter->sample_format(), audioFilter->channels(), audioFilter->channel_layout(), audioFilter->frame_size());
-        }
-        else if (audioDecoder) {
-            std::cout << "configure decoder" << std::endl;
+        else if (audioDecoder)
             initAudio(audioDecoder->sample_rate(), audioDecoder->sample_format(), audioDecoder->channels(), audioDecoder->channel_layout(), audioDecoder->frame_size());
-        }
     }
     catch (const Exception& e) {
         ex.msg(e.what(), MsgPriority::CRITICAL, "Display constructor exception: ");
@@ -83,7 +69,6 @@ int Display::initVideo(int width, int height, AVPixelFormat pix_fmt)
         Uint32 sdl_format = 0;
         int w = width;
         int h = height;
-
 
         switch (pix_fmt) {
         case AV_PIX_FMT_YUV420P:
@@ -443,8 +428,13 @@ int Display::initAudio(int stream_sample_rate, AVSampleFormat stream_sample_form
             int audio_frame_size = av_samples_get_buffer_size(NULL, stream_channels, 1, sdl_sample_format, 1);
             int bytes_per_second = av_samples_get_buffer_size(NULL, stream_channels, stream_sample_rate, sdl_sample_format, 1);
             stream_nb_samples = bytes_per_second * 0.02f / audio_frame_size;
-            std::cout << "bytes_per_second: " << bytes_per_second << " stream_nb_samples: " << stream_nb_samples << std::endl;
         }
+
+        if (!stream_channel_layout || stream_channels != av_get_channel_layout_nb_channels(stream_channel_layout)) {
+            stream_channel_layout = av_get_default_channel_layout(stream_channels);
+            stream_channel_layout &= ~AV_CH_LAYOUT_STEREO_DOWNMIX;
+        }
+        stream_channels = av_get_channel_layout_nb_channels(stream_channel_layout);
 
         sdl.channels = stream_channels;
         sdl.freq = stream_sample_rate;
@@ -484,14 +474,14 @@ int Display::initAudio(int stream_sample_rate, AVSampleFormat stream_sample_form
         for (int i = 0; i < num_drivers; i++)
             std::cout << "audio driver: " << i << " : " << SDL_GetAudioDriver(i) << std::endl;
 
-        int num_devices = SDL_GetNumAudioDevices(0);
-        for (int i = 0; i < num_devices; i++)
-            std::cout << "audio device: " << i << " : " << SDL_GetAudioDeviceName(i, 0) << std::endl;
-
         if (!SDL_WasInit(SDL_INIT_AUDIO)) {
             if (SDL_Init(SDL_INIT_AUDIO))
                 throw Exception(std::string("SDL audio init error: ") + SDL_GetError());
         }
+
+        int num_devices = SDL_GetNumAudioDevices(0);
+        for (int i = 0; i < num_devices; i++)
+            std::cout << "audio device: " << i << " : " << SDL_GetAudioDeviceName(i, 0) << std::endl;
 
         audioDeviceID = SDL_OpenAudioDevice(NULL, 0, &sdl, &have, 0);
         if (audioDeviceID == 0) {
@@ -544,16 +534,16 @@ void Display::AudioCallback(void* userdata, uint8_t* audio_buffer, int len)
                         d->sdl_buffer.push(d->swr_buffer[i]);
                 }
                 else {
-                    SDL_PauseAudioDevice(d->audioDeviceID, true);
-                    len = -1;
-                    d->ex.msg("audio callback received eof");
-                    d->audio_eof = true;
                     if (!d->vfq_in) {
+                        SDL_PauseAudioDevice(d->audioDeviceID, true);
+                        len = -1;
+                        d->ex.msg("audio callback received eof");
+                        d->audio_eof = true;
                         SDL_Event event;
                         event.type = SDL_QUIT;
                         SDL_PushEvent(&event);
-                        return;
                     }
+                    return;
                 }
             }
 

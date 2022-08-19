@@ -165,7 +165,6 @@ public:
     void add_display(Display& display_in)
     {
         display = &display_in;
-        //display->init();
 
         if (!display->vfq_out_name.empty())
             frame_q_names.push_back(display->vfq_out_name);
@@ -222,20 +221,22 @@ public:
                 pkt_queues[videoDecoder->pkt_q_name], frame_queues[videoDecoder->frame_q_name]));
         }
 
-        if (audioDecoder) {
-            ops.push_back(new std::thread(decode, audioDecoder,
-                pkt_queues[audioDecoder->pkt_q_name], frame_queues[audioDecoder->frame_q_name]));
-        }
-
         if (videoFilter) {
             ops.push_back(new std::thread(filter, videoFilter,
                 frame_queues[videoFilter->q_in_name], frame_queues[videoFilter->q_out_name]));
+        }
+
+        /*
+        if (audioDecoder) {
+            ops.push_back(new std::thread(decode, audioDecoder,
+                pkt_queues[audioDecoder->pkt_q_name], frame_queues[audioDecoder->frame_q_name]));
         }
 
         if (audioFilter) {
             ops.push_back(new std::thread(filter, audioFilter,
                 frame_queues[audioFilter->q_in_name], frame_queues[audioFilter->q_out_name]));
         }
+        */
 
         if (videoEncoder) {
             videoEncoder->pkt_q = pkt_queues[videoEncoder->pkt_q_name];
@@ -272,6 +273,17 @@ public:
             if (!display->afq_out_name.empty()) display->afq_out = frame_queues[display->afq_out_name];
 
             display->init();
+
+            if (audioDecoder) {
+                ops.push_back(new std::thread(decode, audioDecoder,
+                    pkt_queues[audioDecoder->pkt_q_name], frame_queues[audioDecoder->frame_q_name]));
+            }
+
+            if (audioFilter) {
+                ops.push_back(new std::thread(filter, audioFilter,
+                    frame_queues[audioFilter->q_in_name], frame_queues[audioFilter->q_out_name]));
+            }
+
             while (display->display()) {}
 
             if (writer) {

@@ -6,6 +6,7 @@ extern "C" {
 #include "libavutil/imgutils.h"
 #include "libavutil/pixdesc.h"
 #include "libavcodec/avcodec.h"
+#include "libavutil/avassert.h"
 }
 
 #include "Exception.h"
