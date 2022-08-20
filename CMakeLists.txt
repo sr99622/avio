@@ -73,10 +73,9 @@ else()
     endif()
 endif()
 
-find_package(PNG)
-
 add_subdirectory(pybind11)
 
+find_package(ZLIB)
 if (ZLIB_LIBRARIES)
     message("-- Zlib is using ${ZLIB_LIBRARIES}")
 else()
@@ -93,10 +92,11 @@ else()
     endif()
 endif()
 
+find_package(PNG)
 if (PNG_LIBRARIES)
     message("-- PNG is using ${PNG_LIBRARIES}")
 else()
-    find_library(PNG_LIBRARIES NAME z
+    find_library(PNG_LIBRARIES NAME png
         HINTS
             $ENV{CONDA_PREFIX}/lib
     )

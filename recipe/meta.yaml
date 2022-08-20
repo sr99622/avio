@@ -27,6 +27,7 @@ requirements:
   host:
     - python
     - pip
+    - zlib
     - ffmpeg  #[win]
     - numpy   #[win]
     - opencv  #[linux]
