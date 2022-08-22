@@ -3,7 +3,6 @@ extern "C"
 #include <libavutil/channel_layout.h>
 }
 
-#include <iomanip>
 #include <filesystem>
 
 #include "Reader.h"

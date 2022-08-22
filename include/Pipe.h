@@ -31,6 +31,7 @@ public:
     void close();
     void adjust_pts(AVPacket* pkt);
     void write(AVPacket* pkt);
+    void show_ctx();
 
     std::string m_filename;
     Reader* reader;
@@ -43,14 +44,9 @@ public:
 
     int64_t video_next_pts = 0;
     int64_t audio_next_pts = 0;
+    int last_video_pkt_duration = 0;
 
     std::mutex mutex;
-
-    //std::string vpq_name;
-    //std::string apq_name;
-
-    //void set_video_in(const std::string& name) { vpq_name = std::string(name); }
-    //void set_audio_in(const std::string& name) { apq_name = std::string(name); }
 
     ExceptionHandler ex;
 

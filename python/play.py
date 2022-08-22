@@ -76,6 +76,10 @@ class Player:
         if args.end_at:
             end_at = args.end_at
 
+        read_q_size = 1
+        if args.read_q_size:
+            read_q_size = args.read_q_size
+
         print(filename)
         reader = avio.Reader(filename)
         reader.start_from(start_from)
@@ -111,7 +115,7 @@ class Player:
         if reader.has_video() and show_video:
             reader.set_video_out("vpq_reader")
             #if filename == "pipe:":
-            reader.vpq_max_size = 1
+            reader.vpq_max_size = read_q_size
             if args.hw_decode:
                 videoDecoder = avio.Decoder(reader, avio.AVMEDIA_TYPE_VIDEO, avio.AV_HWDEVICE_TYPE_CUDA)
             else:
@@ -125,11 +129,12 @@ class Player:
             process.add_decoder(videoDecoder)
             process.add_filter(videoFilter)
             #reader.show_video_pkts = True
+            #videoDecoder.show_frames = True
 
         if reader.has_audio() and show_audio:
             reader.set_audio_out("apq_reader")
             #if filename == "pipe:":
-            reader.apq_max_size = 1
+            reader.apq_max_size = read_q_size
             audioDecoder = avio.Decoder(reader, avio.AVMEDIA_TYPE_AUDIO)
             audioDecoder.set_audio_in(reader.audio_out())
             audioDecoder.set_audio_out("afq_decoder")
@@ -171,7 +176,7 @@ class Player:
                 videoEncoder.video_time_base.den = videoEncoder.frame_rate
                 videoEncoder.video_bit_rate = int(videoDecoder.bit_rate()/4)
                 videoEncoder.gop_size = 30
-                #videoEncoder.profile = "high"
+                videoEncoder.profile = "high"
                 #videoEncoder.show_frames = True
                 if args.hw_encode:
                     videoEncoder.hw_video_codec_name = "h264_nvenc"
@@ -186,7 +191,7 @@ class Player:
                 audioEncoder.set_audio_in(display.audio_out())
                 audioEncoder.set_audio_out("apq_encoder")
 
-                audioEncoder.set_channel_layout_stereo()
+                audioEncoder.set_channel_layout_mono()
                 audioEncoder.sample_fmt = avio.AV_SAMPLE_FMT_FLTP
                 audioEncoder.audio_bit_rate = reader.audio_bit_rate()
                 audioEncoder.sample_rate = reader.sample_rate()
@@ -256,6 +261,7 @@ if __name__ == "__main__":
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int, help="start the video at time in seconds")
     parser.add_argument("--end_at", type=int, help="stop the video at time in seconds")
+    parser.add_argument("--read_q_size", type=int, help="reader max queue size in packets")
     parser.add_argument("--fullscreen", help="fullscreen", action="store_true")
     parser.add_argument("--jpg_enabled", help="enable jpg", action="store_true")
     args = parser.parse_args()

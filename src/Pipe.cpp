@@ -16,7 +16,7 @@ Pipe::~Pipe()
 
 AVCodecContext* Pipe::getContext(AVMediaType mediaType)
 {
-    AVCodecContext* dec_ctx = NULL;
+    AVCodecContext* enc_ctx = NULL;
     std::string strMediaType = "unknown";
 
     try {
@@ -33,16 +33,16 @@ AVCodecContext* Pipe::getContext(AVMediaType mediaType)
 
         if (stream_index < 0) throw Exception("invalid stream index from reader");
         AVStream* stream = reader->fmt_ctx->streams[stream_index];
-        const AVCodec* dec = avcodec_find_decoder(stream->codecpar->codec_id);
-        if (!dec) throw Exception("could not find decoder");
-        ex.ck(dec_ctx = avcodec_alloc_context3(dec), AAC3);
-        ex.ck(avcodec_parameters_to_context(dec_ctx, stream->codecpar), APTC);
+        const AVCodec* enc = avcodec_find_encoder(stream->codecpar->codec_id);
+        if (!enc) throw Exception("could not find encoder");
+        ex.ck(enc_ctx = avcodec_alloc_context3(enc), AAC3);
+        ex.ck(avcodec_parameters_to_context(enc_ctx, stream->codecpar), APTC);
     }
     catch (const Exception& e) {
         std::cout << strMediaType << " Pipe::getContext exception: " << e.what() << std::endl;
     }
 
-    return dec_ctx;
+    return enc_ctx;
 }
 
 void Pipe::open(const std::string& filename)
@@ -62,6 +62,7 @@ void Pipe::open(const std::string& filename)
         ex.ck(avcodec_parameters_from_context(audio_stream->codecpar, audio_ctx), APFC);
         audio_stream->time_base = reader->fmt_ctx->streams[reader->audio_stream_index]->time_base;
 
+        show_ctx();
         ex.ck(avio_open(&fmt_ctx->pb, filename.c_str(), AVIO_FLAG_WRITE), AO);
         ex.ck(avformat_write_header(fmt_ctx, NULL), AWH);
 
@@ -112,6 +113,28 @@ void Pipe::close()
     }
 
     //std::cout << "pipe closed file " << filename << std::endl;
+}
+
+void Pipe::show_ctx()
+{
+    for (int i = 0; i < fmt_ctx->nb_streams; i++) {
+        AVStream* stream = fmt_ctx->streams[i];
+        enum AVMediaType media_type = stream->codecpar->codec_type;
+        switch (media_type) {
+            case AVMEDIA_TYPE_VIDEO:
+                std::cout << "Video Stream" << std::endl;
+                break;
+            case AVMEDIA_TYPE_AUDIO:
+                std::cout << "Audio Stream" << std::endl;
+                std::cout << "sample rate:       " << stream->codecpar->sample_rate << std::endl;
+                std::cout << "sample channels:   " << stream->codecpar->channels << std::endl;
+                std::cout << "sample frame_size: " << stream->codecpar->frame_size << std::endl;
+                std::cout << "sample format:     " << stream->codecpar->format << std::endl;
+                break;
+        }
+
+        std::cout << "stream time base: " << stream->time_base.num << " / " << stream->time_base.den << std::endl;
+    }
 }
 
 }

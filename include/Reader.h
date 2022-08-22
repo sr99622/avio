@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iomanip>
+
 #include "Exception.h"
 #include "Queue.h"
 

@@ -145,6 +145,7 @@ int Decoder::decode(AVPacket* pkt)
                 if (sws_ctx) {
                     ex.ck(sws_scale(sws_ctx, frame->data, frame->linesize, 0, dec_ctx->height,
                         cvt_frame->data, cvt_frame->linesize), SS);
+                    cvt_frame->pts = frame->pts;
                     f = Frame(cvt_frame);
                 }
                 else {
@@ -152,7 +153,6 @@ int Decoder::decode(AVPacket* pkt)
                 }
             }
 
-            //f.m_frame->display_picture_number = dec_ctx->frame_number;  // not used
             f.set_rts(stream);
             if (show_frames) std::cout << strMediaType << " decoder " << f.description() << std::endl;
             frame_q->push(f);
