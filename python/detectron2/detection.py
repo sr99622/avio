@@ -130,6 +130,8 @@ class Detection:
                 # use these lines to filter out classes in bbox tensor
                 #indices = torch.from_numpy(np.where((classes == 0) | (classes == 2))[0])
                 #bboxes = torch.index_select(bboxes, 0, indices)
+                indices = torch.from_numpy(np.where((classes == 0))[0])
+                bboxes = torch.index_select(bboxes, 0, indices)
 
                 if bboxes is not None:
                     targets = self.tracker.update(bboxes, [img.shape[0], img.shape[1]], (img.shape[0], img.shape[1]))

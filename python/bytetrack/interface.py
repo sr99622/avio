@@ -1,15 +1,13 @@
-import os.path as osp
 import cv2
 import torch
 import os
+import numpy as np
 from pathlib import Path
 from sys import platform
-
 from loguru import logger
 
 from yolox.exp import get_exp
 from yolox.utils import postprocess
-from yolox.utils.visualize import plot_tracking
 from yolox.tracker.byte_tracker import BYTETracker
 from yolox.tracking_utils.timer import Timer
 
@@ -36,7 +34,6 @@ class Predictor(object):
         self.fp16 = fp16
         if trt_file is not None:
             from torch2trt import TRTModule
-            from trt import convert
 
             model_trt = TRTModule()
             model_trt.load_state_dict(torch.load(trt_file))
@@ -48,20 +45,7 @@ class Predictor(object):
         self.std = (0.229, 0.224, 0.225)
 
     def inference(self, img):
-        img_info = {"id": 0}
-        if isinstance(img, str):
-            img_info["file_name"] = osp.basename(img)
-            img = cv2.imread(img)
-        else:
-            img_info["file_name"] = None
-
-        height, width = img.shape[:2]
-        img_info["height"] = height
-        img_info["width"] = width
-        img_info["raw_img"] = img
-
         ratio = min(self.test_size[0] / img.shape[0], self.test_size[1] / img.shape[1])
-        img_info["ratio"] = ratio
         inf_shape = (int(img.shape[0] * ratio), int(img.shape[1] * ratio))
         bottom = self.test_size[0] - inf_shape[0]
         side = self.test_size[1] - inf_shape[1]
@@ -76,10 +60,6 @@ class Predictor(object):
         if self.fp16:
             img = img.half()  # to FP16
 
-        #print("self.confthre", self.confthre)
-        #print("self.nmsthre", self.nmsthre)
-        #print("self.num_classes", self.num_classes)
-
         with torch.no_grad():
             outputs = self.model(img)
             if self.decoder is not None:
@@ -88,7 +68,7 @@ class Predictor(object):
                 outputs, self.num_classes, self.confthre, self.nmsthre
             )
 
-        return outputs, img_info
+        return outputs
 
 class Argument:
     track_thresh = 0.5
@@ -125,7 +105,6 @@ class ByteTrack:
         trt = False
         force_cpu = False
 
-
         unpacked_args = arg[0].split(",")
         for line in unpacked_args:
             key_value = line.split("=")
@@ -140,8 +119,6 @@ class ByteTrack:
                 trt = True
             if key_value[0] == "force_cpu":
                 force_cpu = key_value[1].lower() == "true"
-
-
 
         print("class ByteTrack initialized with the values from command line")
         print("ckpt_file", ckpt_file)
@@ -224,40 +201,54 @@ class ByteTrack:
         #print("call")
         #'''
         try :
-            self.timer.tic()
-
-            img = arg[0][0]
-            rts = arg[2][0]
-            #outputs, img_info = self.predictor.inference(img, self.timer)
-            outputs, img_info = self.predictor.inference(img)
+            orig_img = arg[0][0]
+            img = np.ascontiguousarray(np.copy(orig_img))
+            outputs = self.predictor.inference(img)
             if outputs[0] is not None:
-                online_targets = self.tracker.update(outputs[0], [img_info['height'], img_info['width']], self.exp.test_size)
+                online_targets = self.tracker.update(outputs[0], [img.shape[0], img.shape[1]], self.exp.test_size)
 
-                online_tlwhs = []
-                online_ids = []
-                online_scores = []
                 for t in online_targets:
                     tlwh = t.tlwh
                     tid = t.track_id
-                    vertical = tlwh[2] / tlwh[3] > self.args.aspect_ratio_thresh
-                    if tlwh[2] * tlwh[3] > self.args.min_box_area and not vertical:
-                        online_tlwhs.append(tlwh)
-                        online_ids.append(tid)
-                        online_scores.append(t.score)
-                    
-                self.timer.toc()
-                online_im = plot_tracking(
-                    img_info['raw_img'], online_tlwhs, online_ids, frame_id = self.frame_id + 1, fps=1. / self.timer.average_time
-                )
-            else:
-                print('no return')
-                self.timer.toc()
-                online_im = img_info['raw_img']
-            
-            self.frame_id += 1
+                    horizontal = tlwh[2] / tlwh[3] > self.args.aspect_ratio_thresh
+                    if tlwh[2] * tlwh[3] > self.args.min_box_area and not horizontal:
+                        x, y, w, h = tlwh
+                        box = tuple(map(int, (x, y, x + w, y + h)))
+                        id = int(tid)
+                        id_text = '{}'.format(int(id))
+                        color = ((37 * id) % 255, (17 * id) % 255, (29 * id) % 255)
+                        cv2.rectangle(img, box[0:2], box[2:4], color, 2)
+                        cv2.putText(img, id_text, (box[0], box[1]), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
 
+                    if id == 31 or id == 150:
+                        x1, y1, x2, y2 = box
+                        y1 = max(y1, 0)
+                        x1 = max(x1, 0)
+                        y2 = min(y2, img.shape[0])
+                        x2 = min(x2, img.shape[1])
+                        crop = orig_img[y1:y2, x1:x2]
 
-            return online_im       # modified image
+                        dh = 512
+                        dw = 256
+
+                        blank = np.zeros((dh, dw, 3), dtype=np.uint8)
+
+                        w = x2 - x1
+                        h = y2 - y1
+                        if h / w > 2:
+                            scale = dh / h
+                        else:
+                            scale = dw / w
+                        
+                        h = int(h * scale)
+                        w = int(w * scale)
+
+                        resized = cv2.resize(crop, (w, h), interpolation=cv2.INTER_AREA)
+                        blank[:h,0 :w, :] = resized
+                        cv2.imshow('img', blank)
+                        #cv2.imshow('img', resized)
+
+            return img
 
         except BaseException as err:
             logger.exception("ByteTrack runtime error")

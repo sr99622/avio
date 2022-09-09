@@ -55,6 +55,26 @@ class Player:
         keypoint = ""
         if args.keypoint:
             keypoint = eval(args.keypoint)
+        
+        yolov7 = ""
+        if args.yolov7:
+            yolov7 = eval(args.yolov7)
+
+        yolov7_kpt = ""
+        if args.yolov7_kpt:
+            yolov7_kpt = eval(args.yolov7_kpt)
+
+        mm_det = ""
+        if args.mm_det:
+            mm_det = eval(args.mm_det)
+
+        mm_pose = ""
+        if args.mm_pose:
+            mm_pose = eval(args.mm_pose)
+        
+        mm_seg = ""
+        if args.mm_seg:
+            mm_seg = eval(args.mm_seg)
 
         echo = ""
         if args.echo:
@@ -225,6 +245,21 @@ class Player:
         if len(keypoint) > 0:
             process.set_python(display, "./detectron2/keypoint.py", "Keypoint")
             process.set_python_init_arg(display, keypoint)
+        if len(yolov7) > 0:
+            process.set_python(display, "./yolov7/detection/detection.py", "Detection")
+            process.set_python_init_arg(display, yolov7)
+        if len(yolov7_kpt) > 0:
+            process.set_python(display, "./yolov7/keypoint/keypoint.py", "Keypoint")
+            process.set_python_init_arg(display, yolov7_kpt)
+        if len(mm_det) > 0:
+            process.set_python(display, "./mmlab/detection.py", "Detection")
+            process.set_python_init_arg(display, mm_det)
+        if len(mm_pose) > 0:
+            process.set_python(display, "./mmlab/pose.py", "Pose")
+            process.set_python_init_arg(display, mm_pose)
+        if len(mm_seg) > 0:
+            process.set_python(display, "./mmlab/segment.py", "Segment")
+            process.set_python_init_arg(display, mm_seg)
         process.add_display(display)
         process.run()
         print("python done")
@@ -258,6 +293,11 @@ if __name__ == "__main__":
     parser.add_argument("--segment", type=ascii, help='ckpt_file=auto,fp16=True,overlay=False,simple=False')
     parser.add_argument("--keypoint", type=ascii, help='ckpt_file=auto,fp16=True,no_back=False,simple=False')
     parser.add_argument("--bytetrack", type=ascii, help="ckpt_file=bytetrack_l_mot17.pth.tar,fp16=True,force_cpu=True,trt_file=bytetrack_l_mot17_trt.pth")
+    parser.add_argument("--yolov7", type=ascii, help="ckpt_file=auto")
+    parser.add_argument("--yolov7_kpt", type=ascii, help="ckpt_file=auto")
+    parser.add_argument("--mm_det", type=ascii, help="ckpt_file=auto")
+    parser.add_argument("--mm_pose", type=ascii, help="ckpt_file=auto")
+    parser.add_argument("--mm_seg", type=ascii, help="ckpt_file=auto")
     parser.add_argument("--ignore_video_pts", help="ignore video pts", action="store_true")
     parser.add_argument("--start_from", type=int, help="start the video at time in seconds")
     parser.add_argument("--end_at", type=int, help="stop the video at time in seconds")
