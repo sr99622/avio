@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import os
 import cv2
+import argparse
 from loguru import logger
 from sys import platform
 from pathlib import Path
@@ -199,3 +200,15 @@ class InstanceSegmentation:
         except:
             logger.exception("Instance Segmentation runtime error")
             raise
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="detectron2 detection")
+    parser.add_argument("filename", metavar="filename", type=ascii, help="picture file for input")
+    parser.add_argument("checkpoint", metavar="checkpoint", type=ascii, help="checkpoint filename for model")
+    args = parser.parse_args()
+
+    segment = InstanceSegmentation(('ckpt_file=' + eval(args.checkpoint),),)
+    img = cv2.imread(eval(args.filename))
+    img = segment(((np.asarray(img),),))
+    cv2.imshow("image", img)
+    cv2.waitKey(0)

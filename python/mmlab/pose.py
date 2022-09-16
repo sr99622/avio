@@ -43,8 +43,8 @@ class Pose:
 
         self.return_heatmap = False
         self.output_layer_names = None
-        self.bbox_thr = 0.3
-        self.kpt_thr = 0.3
+        self.bbox_thr = 0.6
+        self.kpt_thr = 0.6
         self.radius = 4
         self.thickness = 1
         self.frame_id = 0
@@ -91,7 +91,7 @@ class Pose:
 
 if __name__ == "__main__":
     pose = Pose("ckpt_file=auto")
-    img = cv2.imread("C:/Users/stephen/Pictures/test.jpg")
+    img = cv2.imread("C:/Users/stephen/Pictures/venice/00010_00003.jpg")
     img = pose(((np.asarray(img),),))
     cv2.imshow("image", img)
     cv2.waitKey(0)

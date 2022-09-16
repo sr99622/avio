@@ -5,6 +5,7 @@ import numpy as np
 from loguru import logger
 from sys import platform
 import os
+import argparse
 from pathlib import Path
 from detectron2.config import get_cfg
 from predictor import Predictor
@@ -149,3 +150,15 @@ class Detection:
         except:
             logger.exception("Detection run time failure")
             raise
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="detectron2 detection")
+    parser.add_argument("filename", metavar="filename", type=ascii, help="picture file for input")
+    parser.add_argument("checkpoint", metavar="checkpoint", type=ascii, help="checkpoint filename for model")
+    args = parser.parse_args()
+
+    detect = Detection(('ckpt_file=' + eval(args.checkpoint),),)
+    img = cv2.imread(eval(args.filename))
+    img = detect(((np.asarray(img),),))
+    cv2.imshow("image", img)
+    cv2.waitKey(0)

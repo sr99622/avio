@@ -4,6 +4,7 @@ import torch
 import cv2
 import math
 import os
+import argparse
 from loguru import logger
 from sys import platform
 from pathlib import Path
@@ -187,3 +188,15 @@ class Keypoint:
         except:
             logger.exception("Keypoints runtime error")
             raise
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="detectron2 detection")
+    parser.add_argument("filename", metavar="filename", type=ascii, help="picture file for input")
+    parser.add_argument("checkpoint", metavar="checkpoint", type=ascii, help="checkpoint filename for model")
+    args = parser.parse_args()
+
+    keypoint = Keypoint(('ckpt_file=' + eval(args.checkpoint),),)
+    img = cv2.imread(eval(args.filename))
+    img = keypoint(((np.asarray(img),),))
+    cv2.imshow("image", img)
+    cv2.waitKey(0)

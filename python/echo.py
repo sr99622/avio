@@ -1,3 +1,5 @@
+import cv2
+
 class Echo:
     def __init__(self, arg):
         print("echo.__init__")
@@ -50,7 +52,7 @@ class Echo:
 
         # Possible return arguments
 
-        return img       # return a modified image
+        return cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)       # return a modified image
         #return pts       # return a modified pts
         #return False     # record trigger argument
 

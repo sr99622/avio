@@ -1,20 +1,51 @@
 import cv2
 import torch
-
+import argparse
+import os
 from models.experimental import attempt_load
 from utils.datasets import letterbox
 from utils.general import check_img_size, non_max_suppression, scale_coords
 from utils.plots import plot_one_box, colors
 from utils.torch_utils import select_device
+from sys import platform
+from pathlib import Path
 import numpy as np
+
+def get_auto_ckpt_filename():
+    filename = None
+    if platform == "win32":
+        filename = os.environ['HOMEPATH'] + "/.cache/torch/hub/checkpoints/yolov7-w6-pose.pt"
+    elif platform == "linux":
+        filename = os.environ['HOME'] + "/.cache/torch/hub/checkpoints/yolov7-w6-pose.pt"
+    return filename
 
 class Keypoint:
     def __init__(self, arg):
-        print("Keypoint.__init__")
+        print("Keypoint.__init__", arg)
         #'''
+
+        ckpt_file = None
+
+        unpacked_args = arg[0].split(",")
+        for line in unpacked_args:
+            key_value = line.split("=")
+            print("key  ", key_value[0])
+            print("value", key_value[1])
+            if key_value[0] == "ckpt_file":
+                ckpt_file = key_value[1]
+
+
+        if ckpt_file is not None:
+            if ckpt_file.lower() == "auto":
+                ckpt_file = get_auto_ckpt_filename()
+                print("cpkt_file:", ckpt_file)
+                cache = Path(ckpt_file)
+
+                if not cache.is_file():
+                    cache.parent.mkdir(parents=True, exist_ok=True)
+                    torch.hub.download_url_to_file("https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-w6-pose.pt", ckpt_file)
+
         with torch.no_grad():
-            weights = "yolov7/keypoint/yolov7-w6-pose.pt"
-            view_img = True
             self.imgsz = 640
             self.kpt_label = True
             self.conf_thres = 0.01
@@ -26,7 +57,8 @@ class Keypoint:
             self.device = select_device(opt_device)
             self.half = self.device.type != 'cpu'
 
-            self.model = attempt_load(weights, map_location=self.device)  # load FP32 model
+            print("ckpt", ckpt_file)
+            self.model = attempt_load(ckpt_file, map_location=self.device)  # load FP32 model
             self.stride = int(self.model.stride.max())  # model stride
 
             self.imgsz = check_img_size(self.imgsz, s=self.stride)  # check img_size
@@ -70,4 +102,14 @@ class Keypoint:
         return im0
         #'''
         
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="yolov7 keypoint")
+    parser.add_argument("filename", metavar="filename", type=ascii, help="picture file for input")
+    parser.add_argument("checkpoint", metavar="checkpoint", type=ascii, help="checkpoint filename for model")
+    args = parser.parse_args()
 
+    keypoint = Keypoint(('ckpt_file=' + eval(args.checkpoint),),)
+    img = cv2.imread(eval(args.filename))
+    img = keypoint(((np.asarray(img),),))
+    cv2.imshow("image", img)
+    cv2.waitKey(0)
