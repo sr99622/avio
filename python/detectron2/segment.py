@@ -99,6 +99,9 @@ class InstanceSegmentation:
             raise
 
 
+    def predict(self, img):
+        return self.predictor(img)["instances"].to(torch.device('cpu'))
+
     def __call__(self, arg):
         try:
             img = arg[0][0]

@@ -70,6 +70,45 @@ class Keypoint:
                 self.model(torch.zeros(1, 3, self.imgsz, self.imgsz).to(self.device).type_as(next(self.model.parameters())))  # run once
         #'''
 
+    def predict(self, im0):
+        with torch.no_grad():
+
+            img, ratio, border = letterbox(im0, self.imgsz, stride=self.stride)
+            img = img[:, :, ::-1].transpose(2, 0, 1)
+            img = np.ascontiguousarray(img)
+
+
+            img = torch.from_numpy(img).to(self.device)
+            img = img.half() if self.half else img.float() 
+            img /= 255.0 
+            if img.ndimension() == 3:
+                img = img.unsqueeze(0)
+
+            pred = self.model(img, False)[0]
+            pred = non_max_suppression(pred, self.conf_thres, self.iou_thres, classes=self.classes, agnostic=self.agnostic, kpt_label=self.kpt_label)
+
+            #im0 = im0s.copy()
+            kpts_ary = None
+            for det in pred:
+                if len(det):
+                    scale_coords(img.shape[2:], det[:, :4], im0.shape, kpt_label=False)
+                    scale_coords(img.shape[2:], det[:, 6:], im0.shape, kpt_label=self.kpt_label, step=3)
+                    kpts_ary = torch.zeros((len(det), 17, 3)).to(torch.device('cuda:0'))
+                    for det_index, (*xyxy, conf, cls) in enumerate(reversed(det[:,:6])):
+                        c = int(cls) 
+                        kpts = det[det_index, 6:]
+                        steps = 3
+                        num_kpts = len(kpts) // steps
+                        for kid in range(num_kpts):
+                            x_coord, y_coord, conf = kpts[steps * kid], kpts[steps * kid + 1], kpts[steps * kid + 2]
+                            kpts_ary[det_index, kid] = torch.Tensor([x_coord, y_coord, conf])
+
+            if kpts_ary is not None:
+                return kpts_ary.to(torch.device('cpu')).numpy()
+            else:
+                return None
+
+
     def __call__(self, arg):
         #'''
         im0 = arg[0][0]
@@ -91,12 +130,29 @@ class Keypoint:
 
             #im0 = im0s.copy()
             for det in pred:
+                print("len(det)", len(det))
                 if len(det):
                     scale_coords(img.shape[2:], det[:, :4], im0.shape, kpt_label=False)
                     scale_coords(img.shape[2:], det[:, 6:], im0.shape, kpt_label=self.kpt_label, step=3)
                     for det_index, (*xyxy, conf, cls) in enumerate(reversed(det[:,:6])):
                         c = int(cls) 
                         kpts = det[det_index, 6:]
+                        '''
+                        print("len(kpts)", len(kpts))
+                        steps = 3
+                        num_kpts = len(kpts) // steps
+                        print("num_kpts A:", num_kpts)
+                        for kid in range(num_kpts):
+                            x_coord, y_coord, conf = kpts[steps * kid], kpts[steps * kid + 1], kpts[steps * kid + 2]
+                            if conf < 0.5:
+                                continue
+
+                            if kid in (0, 1, 2, 3, 4):
+                                kid_text = '{}'.format(kid)
+                                cv2.circle(im0, (int(x_coord), int(y_coord)), 4, (255, 255, 255), -1)
+                                cv2.putText(im0, kid_text, (int(x_coord), int(y_coord)), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
+                        '''
+
                         plot_one_box(xyxy, im0, label=None, color=colors(c, True), line_thickness=1, kpt_label=self.kpt_label, kpts=kpts, steps=3, orig_shape=im0.shape[:2])
 
         return im0

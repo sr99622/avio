@@ -85,6 +85,9 @@ def plot_one_box(x, im, color=None, label=None, line_thickness=3, kpt_label=Fals
 
 
 def plot_skeleton_kpts(im, kpts, steps, orig_shape=None):
+    print("plot_skeleton_kpts:", len(kpts))
+    print("steps", steps)
+
     #Plot the skeleton and keypointsfor coco datatset
     palette = np.array([[255, 128, 0], [255, 153, 51], [255, 178, 102],
                         [230, 230, 0], [255, 153, 255], [153, 204, 255],
@@ -102,6 +105,8 @@ def plot_skeleton_kpts(im, kpts, steps, orig_shape=None):
     pose_kpt_color = palette[[16, 16, 16, 16, 16, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9]]
     radius = 5
     num_kpts = len(kpts) // steps
+
+    print("num_kpts", num_kpts)
 
     for kid in range(num_kpts):
         r, g, b = pose_kpt_color[kid]

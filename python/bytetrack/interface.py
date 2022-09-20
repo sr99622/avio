@@ -14,6 +14,7 @@ from yolox.tracker.byte_tracker import BYTETracker
 from yolox.tracking_utils.timer import Timer
 
 from torchvision.transforms import functional
+from worker import Worker
 
 #'''
 class Predictor(object):
@@ -191,6 +192,7 @@ class ByteTrack:
 
             self.predictor = Predictor(model, self.exp, trt_file, decoder, device, fp16)
             self.tracker = BYTETracker(self.args)
+            self.worker = Worker("test initializer")
             self.timer = Timer()
             self.frame_id = 0
             self.loop_count = 0
@@ -200,87 +202,41 @@ class ByteTrack:
             raise
         #'''
 
+    def predict(self, img):
+        online_targets = None
+        outputs = self.predictor.inference(img)
+        if outputs[0] is not None:
+            online_targets = self.tracker.update(outputs[0], [img.shape[0], img.shape[1]], self.exp.test_size)
+        return online_targets
+
+    def draw_boxes(self, img, online_targets):
+        for t in online_targets:
+            tlwh = t.tlwh
+            track_id = int(t.track_id)
+            id_text = '{}'.format(int(track_id)).zfill(5)
+            color = ((37 * track_id) % 255, (17 * track_id) % 255, (29 * track_id) % 255)
+
+            x, y, w, h = tlwh
+            box = tuple(map(int, (x, y, x + w, y + h)))
+            x1, y1, x2, y2 = box
+            y1 = max(y1, 0)
+            x1 = max(x1, 0)
+            y2 = min(y2, img.shape[0])
+            x2 = min(x2, img.shape[1])
+            w = x2 - x1
+            h = y2 - y1
+            cv2.rectangle(img, box[0:2], box[2:4], color, 2)
+            cv2.putText(img, id_text, (box[0], box[1]), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
+
     def __call__(self, arg):
         #print("call")
         #'''
         try :
-            orig_img = arg[0][0]
-            self.frame_id += 1
-            frame_id_text = '{}'.format(int(self.frame_id))
-            while len(frame_id_text) < 5:
-                frame_id_text = "0" + frame_id_text
-            self.loop_count += 1
-            img = np.ascontiguousarray(np.copy(orig_img))
-            outputs = self.predictor.inference(img)
-            if outputs[0] is not None:
-                online_targets = self.tracker.update(outputs[0], [img.shape[0], img.shape[1]], self.exp.test_size)
-
-                for t in online_targets:
-                    tlwh = t.tlwh
-                    tid = t.track_id
-                    horizontal = tlwh[2] / tlwh[3] > self.args.aspect_ratio_thresh
-                    if tlwh[2] * tlwh[3] > self.args.min_box_area and not horizontal:
-
-                        dh = 512
-                        dw = 256
-
-                        x, y, w, h = tlwh
-                        box = tuple(map(int, (x, y, x + w, y + h)))
-                        x1, y1, x2, y2 = box
-                        y1 = max(y1, 0)
-                        x1 = max(x1, 0)
-                        y2 = min(y2, img.shape[0])
-                        x2 = min(x2, img.shape[1])
-                        w = x2 - x1
-                        h = y2 - y1
-
-                        id = int(tid)
-                        id_text = '{}'.format(int(id))
-                        while len(id_text) < 5:
-                            id_text = "0" + id_text
-                        color = ((37 * id) % 255, (17 * id) % 255, (29 * id) % 255)
-
-                        #print("h", h, " y2 - y1", y2 - y1)
-                        if y2 - y1 > 512 and h / w > 2.0:
-                            color = (255, 255, 255)
-                            filename = "C:/Users/stephen/Pictures/venice/" + frame_id_text + "_" + id_text + ".jpg"
-
-                            projected_height = int(h * 1.1)
-                            delta_y = projected_height - h
-                            y1 = y1 - int(delta_y / 2)
-                            y2 = y2 + int(delta_y / 2)
-
-                            projected_width = projected_height / 2
-                            delta_x = projected_width - w
-                            x1 = x1 - int(delta_x / 2)
-                            x2 = x2 + int(delta_x / 2)
-
-                            if x1 > 0 and x2 < img.shape[1] and y1 > 0 and y2 < img.shape[0]:
-
-                                scale = dh / h
-                                w = int(w * scale)
-
-                                blank = np.zeros((dh, dw, 3), dtype=np.uint8)
-                                crop = orig_img[y1:y2, x1:x2]
-
-                                resized = cv2.resize(crop, (dw, dh), interpolation=cv2.INTER_AREA)
-                                #blank[:dh, w_diff:w+w_diff, :] = resized
-                                blank[:dh, :dw, :] = resized
-
-                                if self.loop_count == 10:
-                                    print("filename:", filename)
-                                    print("self.loop_count:", self.loop_count)
-                                    cv2.imwrite(filename, blank)
-
-                        cv2.rectangle(img, box[0:2], box[2:4], color, 2)
-                        cv2.putText(img, id_text, (box[0], box[1]), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
-            
-
-            if self.loop_count == 10:
-                self.loop_count = 0
-
-
-            return cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
+            img = arg[0][0]
+            online_targets = self.predict(img)
+            if online_targets is not None:
+                self.draw_boxes(img, online_targets)
+            return img
 
         except BaseException as err:
             logger.exception("ByteTrack runtime error")

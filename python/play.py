@@ -76,6 +76,10 @@ class Player:
         if args.mm_seg:
             mm_seg = eval(args.mm_seg)
 
+        harvest = ""
+        if args.harvest:
+            harvest = eval(args.harvest)
+
         echo = ""
         if args.echo:
             echo = eval(args.echo)
@@ -260,6 +264,9 @@ class Player:
         if len(mm_seg) > 0:
             process.set_python(display, "./mmlab/segment.py", "Segment")
             process.set_python_init_arg(display, mm_seg)
+        if len(harvest) > 0:
+            process.set_python(display, "./harvest.py", "Harvest")
+            process.set_python_init_arg(display, harvest)
         process.add_display(display)
         process.run()
         print("python done")
@@ -304,6 +311,7 @@ if __name__ == "__main__":
     parser.add_argument("--read_q_size", type=int, help="reader max queue size in packets")
     parser.add_argument("--fullscreen", help="fullscreen", action="store_true")
     parser.add_argument("--jpg_enabled", help="enable jpg", action="store_true")
+    parser.add_argument("--harvest", type=ascii, help="key=value")
     args = parser.parse_args()
 
     player = Player()
