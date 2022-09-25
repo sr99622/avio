@@ -30,6 +30,8 @@ class Harvest:
         self.desired_height = 512
         self.active_tracks = {}
         self.img_count = 0
+        self.dir = "C:/Users/stephen/Pictures/flatiron/"
+        self.conf_thresh = 0.5
 
     def __call__(self, arg):
         try:
@@ -97,23 +99,40 @@ class Harvest:
 
                                 segments = self.segment.predict(test_subject)
                                 if len(segments.pred_masks) > 0:
+                                    # only check the first mask, this is almost always the best choice anyway
                                     mask = segments.pred_masks[0]
-                                    img_tensor = torch.from_numpy(test_subject)
-                                    img_tensor *= torch.stack((mask, mask, mask), 2)
-                                    seg_img = img_tensor.numpy()
-                                    kpts = self.keypoint.predict(seg_img)
-                                    if kpts is not None:
-                                        kpts[0][:, 2] = kpts[0][:, 2] > 0.5
-                                        body_points = sum(kpts[0][:, 2][5:])
-                                        face_points = sum(kpts[0][:, 2][:5])
-                                        if body_points == 12.0 and face_points == 5.0:
-                                            print("GOT IT")
-                                            rts_text = '{}'.format(int(rts)).zfill(7)
-                                            self.img_count += 1
-                                            count_text = '{}'.format(int(self.img_count)).zfill(4)
-                                            self.active_tracks[track_id].saved = True
-                                            filename = "C:/Users/stephen/Pictures/42nd/" + rts_text + "_" + count_text + ".jpg"
-                                            cv2.imwrite(filename, subject)
+                                    focus_box = segments.pred_boxes[0].tensor.numpy().astype(int)[0]
+                                    bx1, by1, bx2, by2 = focus_box
+                                    box_height = by2 - by1
+                                    if box_height > dh * 0.85:
+                                        img_tensor = torch.from_numpy(test_subject)
+                                        img_tensor *= torch.stack((mask, mask, mask), 2)
+                                        seg_img = img_tensor.numpy()
+                                        kpts_set = self.keypoint.predict(seg_img)
+                                        if kpts_set is not None:
+                                            # only check the first keypoints
+                                            kpts = kpts_set[0]
+                                            # keypoint confidence converted to boolean greater than threshold
+                                            kpts[:, 2] = kpts[:, 2] > self.conf_thresh
+                                            body_points = sum(kpts[:, 2][5:])
+                                            face_points = sum(kpts[:, 2][:5])
+                                            # verify full set of points over confidence threshold
+                                            if body_points == 12.0 and face_points == 5.0:
+                                                # align image by the nose keypoint
+                                                box_center = [bx1 + (bx2 - bx1) // 2, by1 + (by2 - by1) // 2]
+                                                nose = kpts[0][:2].astype(int)
+                                                nose_distance = [nose[0] - box_center[0], nose[1] - by1]
+                                                x_qual = nose_distance[0] > -15 and nose_distance[0] < 10
+                                                y_qual = nose_distance[1] > 40 and nose_distance[1] < 50
+                                                if x_qual and y_qual: 
+                                                    # if all tests passed, write the image to file
+                                                    rts_text = '{}'.format(int(rts)).zfill(7)
+                                                    self.img_count += 1
+                                                    count_text = '{}'.format(int(self.img_count)).zfill(4)
+                                                    self.active_tracks[track_id].saved = True
+                                                    filename = self.dir + rts_text + "_" + count_text + ".jpg"
+                                                    cv2.imwrite(filename, subject)
+                                                    print("saved", filename)
 
 
         
