@@ -7,6 +7,8 @@ import pickle
 from loguru import logger
 import qdarktheme
 
+from box import Box
+
 sys.path.append("yolov7/keypoint")
 sys.path.append("detectron2")
 
@@ -62,14 +64,16 @@ class ListWidget(QListWidget):
             if item is not None:
                 print(item.text())
                 image = np.asarray(cv2.imread(self.mainWindow.directory + "/" + item.text()))
+                frame = Box(image.shape[:2], "shape")
 
                 if self.mainWindow.chkProcess.isChecked():
                     segments = self.mainWindow.segment.predict(image)
                     mask = segments.pred_masks[0]
-                    box = segments.pred_boxes[0].tensor.numpy().astype(int)[0]
-                    x1, y1, x2, y2 = box
-                    print("box_height", y2 - y1)
-                    box_center = [x1 + (x2 - x1) // 2, y1 + (y2 - y1) // 2]
+                    #box = segments.pred_boxes[0].tensor.numpy().astype(int)[0]
+                    focus = Box(segments.pred_boxes[0].tensor.numpy().astype(int)[0], "xyxy")
+                    #x1, y1, x2, y2 = box
+                    print("focus height", focus.h)
+                    #box_center = [x1 + (x2 - x1) // 2, y1 + (y2 - y1) // 2]
                     img_tensor = torch.from_numpy(image)
                     img_tensor *= torch.stack((mask, mask, mask), 2)
 
@@ -86,14 +90,16 @@ class ListWidget(QListWidget):
                     #face_points = sum(kpts[:, 2][:5])
                     #count = sum(kpts[:, 2])
                     nose = kpts[0][:2].astype(int)
-                    nose_distance = [nose[0] - box_center[0], nose[1] - y1]
+                    nose_distance = [nose[0] - frame.center()[0], nose[1] - frame.y1]
                     print("nose_distance", nose_distance)
 
-                    for pt in kpts:
-                        x_coord, y_coord, conf = pt.astype(int)
-                        if conf:
-                            cv2.circle(image, (x_coord, y_coord), 4, (255, 255, 255), -1)
-                            cv2.rectangle(image, box[:2], box[2:], (255, 255, 255), 1)
+                    #for pt in kpts:
+                    #    x_coord, y_coord, conf = pt.astype(int)
+                    #    if conf:
+                    #        cv2.circle(image, (x_coord, y_coord), 4, (255, 255, 255), -1)
+                    #        cv2.rectangle(image, focus.tl(), focus.br(), (255, 255, 255), 1)
+                    x_coord, y_coord, conf = kpts[0].astype(int)
+                    cv2.circle(image, (x_coord, y_coord), 4, (255, 255, 255), 1)
 
                 qimage = QImage(image, image.shape[1], image.shape[0], QImage.Format.Format_BGR888)
                 pixmap = QPixmap(qimage)
@@ -174,15 +180,18 @@ class MainWindow(ViewerWindow):
                 item = self.lstFiles.item(i)
                 print(item.text())
                 image = np.asarray(cv2.imread(self.directory + "/" + item.text()))
+                frame = Box(image.shape[:2], "shape")
                 segments = self.segment.predict(image)
                 if len(segments.pred_masks) > 0:
                     mask = segments.pred_masks[0]
-                    box = segments.pred_boxes[0].tensor.numpy()[0]
-                    box_dim = [box[3] - box[1], (box[3] - box[1]) / (box[2] - box[0])]
-                    print("box_dim", box_dim)
-                    box_dims.append(box_dim)
-                    x1, y1, x2, y2 = box.astype(int)
-                    box_center = [x1 + (x2 - x1) // 2, y1 + (y2 - y1) // 2]
+                    #box = segments.pred_boxes[0].tensor.numpy()[0]
+                    focus = Box(segments.pred_boxes[0].tensor.numpy()[0], "xyxy")
+
+                    #box_dim = [box[3] - box[1], (box[3] - box[1]) / (box[2] - box[0])]
+                    #print("box_dim", box_dim)
+                    #box_dims.append(box_dim)
+                    #x1, y1, x2, y2 = box.astype(int)
+                    #box_center = [x1 + (x2 - x1) // 2, y1 + (y2 - y1) // 2]
                     img_tensor = torch.from_numpy(image)
                     img_tensor *= torch.stack((mask, mask, mask), 2)
                     image = img_tensor.numpy()
@@ -190,7 +199,7 @@ class MainWindow(ViewerWindow):
                     if kpts is not None:
                         kpts = kpts[0]
                         nose = kpts[0][:2].astype(int)
-                        nose_distance = [nose[0] - box_center[0], nose[1] - y1]
+                        nose_distance = [nose[0] - frame.center()[0], nose[1] - frame.y1]
                         nose_distances.append(nose_distance)
                         print("nose_distance", nose_distance)
 
@@ -200,11 +209,11 @@ class MainWindow(ViewerWindow):
             print("mean", nose_mean)
             print("std", nose_std)
 
-            box_result = np.stack(box_dims, axis=0)
-            box_mean = np.mean(box_result, 0)
-            box_std = np.std(box_result, 0)
-            print("box_mean", box_mean)
-            print("box_std", box_std)
+            #box_result = np.stack(box_dims, axis=0)
+            #box_mean = np.mean(box_result, 0)
+            #box_std = np.std(box_result, 0)
+            #print("box_mean", box_mean)
+            #print("box_std", box_std)
 
         except Exception as error:
             logger.exception(error)
